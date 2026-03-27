@@ -122,6 +122,7 @@ public class RevolverAnimation extends Application {
 
         // Set the amount and direction of the JavFX rotation to the top.
         // Set the shot order.
+        //**TODO Need position and slot info for logging List<Pair<RevolverMotion.RevolverTrackingPosition, Circle>>
         double rotationToShootingPosition;
         List<Circle> fxShotOrder = new ArrayList<>();
 
@@ -196,12 +197,15 @@ public class RevolverAnimation extends Application {
 
         // According to the shot order set above, rotate all three
         // artifacts to top center and shoot.
-        for (Circle oneArtifact : fxShotOrder) {
-            //**TODO log each rotation and shot: fx:id, color, rotation amount
-            // later include position and slot id
-            rotateAndShoot(oneArtifact, rotationToShootingPosition);
-            rotationToShootingPosition = 120.0; // rotate 120 degrees CW for the second and third shots
-        }
+        //**TODO TEMP first shot
+        rotateAndShoot(controller.bottom_left, rotationToShootingPosition);
+//        for (Circle oneArtifact : fxShotOrder) {
+//            RobotLogCommon.d(TAG, "Rotate artifact with fx:id " + oneArtifact.getId() + " " + rotationToShootingPosition + " degrees to top center");
+//            //**TODO include " from position " + pos " with slot id " and color " + color.
+//
+//            rotateAndShoot(oneArtifact, rotationToShootingPosition);
+//            rotationToShootingPosition = 120.0; // rotate 120 degrees CW for the second and third shots
+//        }
 
         pStage.setTitle("FTC Decode: Team 4348 Revolver");
         Scene rootScene = new Scene(root);
@@ -337,7 +341,7 @@ public class RevolverAnimation extends Application {
             pArtifact.setCenterY(controller.top_center.getCenterY());
 
             // And move it vertically off the screen.
-            TranslateTransition ttoff = new TranslateTransition(Duration.seconds(1), pArtifact);
+            TranslateTransition ttoff = new TranslateTransition(Duration.seconds(1000), pArtifact);
             ttoff.setByY(-250); // move the node up by a specified amount
             ttoff.play(); // Start the animation
 
