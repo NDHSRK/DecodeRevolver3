@@ -34,6 +34,20 @@ public class RevolverAnimation extends Application {
     // actual Revolver hardware. Methods that activate the hardware
     // are not called or commented out.
     // The animation also does not include the intake of artifacts.
+
+    //**TODO Alignment of the Revolver nodes including the divider
+    // lines needs refinement - use trigonometry for the ending
+    // coordinates of the divider lines and the placement of the
+    // center points of all artifacts.
+
+    //**TODO Merge in the UI that will take the place of RevolverMotionTester.
+
+    //**TODO Need a play/replay button
+
+    //**TODO Need labels for slots. The labels should remain horizontal even
+    // as the revolver rotates.
+
+    //**TODO Instead of simple divider lines use fillable Paths with arcs.
     @Override
     public void start(final Stage pStage) throws IOException, InterruptedException {
 
