@@ -181,8 +181,8 @@ public class RevolverAnimation extends Application {
                     case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_RIGHT: {
                         rotationToShootingPosition = -60.0;
                         fxShotOrder.add(controller.top_right);
-                        fxShotOrder.add(controller.bottom_center);
                         fxShotOrder.add(controller.top_left);
+                        fxShotOrder.add(controller.bottom_center);
                         break;
                     }
                     default: {
@@ -196,16 +196,20 @@ public class RevolverAnimation extends Application {
         }
 
         // According to the shot order set above, rotate all three
-        // artifacts to top center and shoot.
-        //**TODO TEMP first shot
-        rotateAndShoot(controller.bottom_left, rotationToShootingPosition);
-//        for (Circle oneArtifact : fxShotOrder) {
-//            RobotLogCommon.d(TAG, "Rotate artifact with fx:id " + oneArtifact.getId() + " " + rotationToShootingPosition + " degrees to top center");
-//            //**TODO include " from position " + pos " with slot id " and color " + color.
-//
-//            rotateAndShoot(oneArtifact, rotationToShootingPosition);
-//            rotationToShootingPosition = 120.0; // rotate 120 degrees CW for the second and third shots
-//        }
+        // artifacts to top center and shoot. Note that the only
+        // way to make this work was to add each rotation and
+        // shot as a SequentialTransition to an enclosing
+        // SequentialTransition and then play.
+        SequentialTransition rapidFire = new SequentialTransition();
+        for (Circle oneArtifact : fxShotOrder) {
+            RobotLogCommon.d(TAG, "Rotate artifact with fx:id " + oneArtifact.getId() + " " + rotationToShootingPosition + " degrees to top center");
+            //**TODO include " from position " + pos " with slot id " and color " + color.
+
+            rapidFire.getChildren().add(rotateAndShoot(oneArtifact, rotationToShootingPosition));
+            rotationToShootingPosition = 120.0; // rotate 120 degrees CW for the second and third shots
+        }
+
+        rapidFire.play(); // rapid fire shows here.
 
         pStage.setTitle("FTC Decode: Team 4348 Revolver");
         Scene rootScene = new Scene(root);
@@ -292,10 +296,12 @@ public class RevolverAnimation extends Application {
                 pCircle.setFill(Color.PURPLE);
 
             case UNKNOWN -> {
+                pCircle.setFill(Color.LIGHTGRAY);
                 pCircle.setStroke(Color.RED);
                 pCircle.setStrokeWidth(10.0);
             }
             case NPOS -> {
+                pCircle.setFill(Color.LIGHTGRAY);
                 pCircle.setStroke(Color.BLACK);
                 pCircle.setStrokeWidth(10.0);
             }
@@ -306,8 +312,8 @@ public class RevolverAnimation extends Application {
         pCircle.setVisible(true);
     }
 
-    private void rotateAndShoot(Circle pArtifact, double pRotation) {
-        // Rotate the Group with 1 - 3 artifacts.
+    private SequentialTransition rotateAndShoot(Circle pArtifact, double pRotation) {
+        // Rotate the Group with 3 positions.
         RotateTransition rotate1 = new RotateTransition(Duration.millis(2000));
         rotate1.setByAngle(pRotation); // Rotate relative to current position
         rotate1.setOnFinished(event -> {
@@ -341,7 +347,7 @@ public class RevolverAnimation extends Application {
             pArtifact.setCenterY(controller.top_center.getCenterY());
 
             // And move it vertically off the screen.
-            TranslateTransition ttoff = new TranslateTransition(Duration.seconds(1000), pArtifact);
+            TranslateTransition ttoff = new TranslateTransition(Duration.millis(1000), pArtifact);
             ttoff.setByY(-250); // move the node up by a specified amount
             ttoff.play(); // Start the animation
 
@@ -354,8 +360,7 @@ public class RevolverAnimation extends Application {
 
         // Create the SequentialTransition and add the animations.
         // The animations will run in the order they are listed in the constructor
-        SequentialTransition seqT1 = new SequentialTransition(controller.revolver, rotate1, pt);
-        seqT1.play();
+        return new SequentialTransition(controller.revolver, rotate1, pt);
     }
 
     private static class ArtifactDisplayPosition {
