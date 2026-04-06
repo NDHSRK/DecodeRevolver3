@@ -7,18 +7,39 @@
 
 <Pane fx:id="revolverPane" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.firstinspires.ftc.teamcode.auto.RevolverController">
    <Group fx:id="revolver">
-      <Circle fx:id="top_left" centerX="200.0" centerY="230.0" fill="#7d1fff" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
-      <Circle fx:id="top_right" centerX="400.0" centerY="230.0" fill="#7d1fff" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
-      <Circle fx:id="bottom_center" centerX="300.0" centerY="420.0" fill="#1fff81" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" /><Circle fx:id="revolver_body" fill="#ffffff00" layoutX="300.0" layoutY="300.0" radius="200.0" stroke="BLACK" strokeWidth="2" />
+      <!-- Note: the coordinates of each artifact are determined using the same trigonometric
+         formulas below with a radius of 100 (the midpoint). -->
+      <Circle fx:id="top_left" centerX="213.0" centerY="250.0" fill="#7d1fff" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
+      <Circle fx:id="top_right" centerX="386.6" centerY="250.0" fill="#7d1fff" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
+      <Circle fx:id="bottom_center" centerX="300.0" centerY="400.0" fill="#1fff81" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
+      <Circle fx:id="revolver_body" fill="#ffffff00" layoutX="300.0" layoutY="300.0" radius="200.0" stroke="BLACK" strokeWidth="2" visible="false" />
       <Circle fx:id="center_shaft" centerX="300.0" centerY="300.0" radius="13.0" stroke="BLACK" strokeType="INSIDE" />
-      <Circle id="top_center" fx:id="top_center" centerX="300.0" centerY="180.0" fill="#1fff81" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
-      <Circle fx:id="bottom_left" centerX="200.0" centerY="370.0" fill="#7d1fff" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
-      <Circle fx:id="bottom_right" centerX="400.0" centerY="370.0" fill="#7d1fff" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
-      <Line fx:id="center_to_top_divider" endX="300.0" endY="100.0" startX="300.0" startY="300.0"  visible="false" />
-      <Line fx:id="lower_left_divider" endX="123.20001220703125" endY="391.20001220703125" startX="300.0" startY="300.0" visible="false" />
-      <Line fx:id="lower_right_divider" endX="473.5999755859375" endY="396.79998779296875" startX="300.0" startY="300.0" visible="false" />
-      <Line fx:id="upper_left_divider" endX="130.0" endY="200.8000030517578" startX="300.0" startY="300.0" visible="false" />
-      <Line fx:id="upper_right_divider" endX="470.0" endY="205.69290161132812" startX="300.0" startY="300.0" visible="false" />
-      <Line fx:id="center_to_bottom_divider" endX="300.0" endY="501.0" startX="300.0" startY="300.0" visible="false" />
+      <Circle id="top_center" fx:id="top_center" centerX="300.0" centerY="200.0" fill="#1fff81" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
+      <Circle fx:id="bottom_left" centerX="213.4" centerY="350.0" fill="#7d1fff" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
+      <Circle fx:id="bottom_right" centerX="386.6" centerY="350.0" fill="#7d1fff" radius="70.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
+
+      <!-- FTC 0 degrees; std 90 degrees -> sine 1.0, cosine 0.0 -->
+      <!-- X -> 300 + (200 * 0) = 300; Y -> 300 + 200 [for JavaFX -200] = 100 -->
+      <Line fx:id="center_to_top_divider" endX="300.0" endY="100.0" startX="300.0" startY="300.0" visible="false" />
+
+      <!-- FTC 120 degrees; std 210 degrees -> sine -0.5, cosine -0.8660 -->
+      <!-- X -> 300 + (200 * -0.8660) -> 300 + -173.2 = 126.8; Y -> 300 + -100 [for JavaFX +100] = 400 -->
+      <Line fx:id="lower_left_divider" endX="126.8" endY="400.0" startX="300.0" startY="300.0" visible="false" />
+
+      <!-- FTC -120 degrees; std -30 degrees = 330 degrees -> sine -0.5, cosine 0.8660 -->
+      <!-- X -> 300 + (200 * 0.8660) -> 300 + 173.2 = 473.2; Y -> 300 + -100 [for JavaFX +100] = 400 -->
+      <Line fx:id="lower_right_divider" endX="473.2" endY="400.0" startX="300.0" startY="300.0" visible="false" />
+
+      <!-- FTC 60 degrees; std 150 degrees -> sine 0.5, cosine -0.8660 -->
+      <!-- X -> 300 + (200 * -0.8660) -> 300 + -173.2 = 126.8; Y -> 300 + 100 [for JavaFX -100] = 200 -->
+      <Line fx:id="upper_left_divider" endX="126.8" endY="200.0" startX="300.0" startY="300.0" visible="false" />
+
+      <!-- FTC -60 degrees; std 30 degrees -> sine 0.5, cosine 0.8660 -->
+      <!-- X -> 300 + (200 * 0.8660) -> 300 + 173.2 = 473.2; Y -> 300 + 100 [for JavaFX -100] = 200 -->
+      <Line fx:id="upper_right_divider" endX="473.2" endY="200.0" startX="300.0" startY="300.0" visible="false" />
+
+      <!-- FTC 180 degrees; std 270 degrees -> sine -1.0, cosine 0.0 -->
+      <!-- X -> 300 + (200 * 0.0) = 300; Y -> 300 + -200 [for JavaFX 200] = 500 -->
+      <Line fx:id="center_to_bottom_divider" endX="300.0" endY="500.0" startX="300.0" startY="300.0" visible="false" />
    </Group>
 </Pane>
