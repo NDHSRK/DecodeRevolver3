@@ -5,6 +5,8 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Line?>
 
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 <Pane fx:id="revolverPane" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.firstinspires.ftc.teamcode.auto.RevolverController">
    <Group fx:id="revolver">
       <!-- Note: the coordinates of each artifact are determined using the same trigonometric

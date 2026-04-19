@@ -7,6 +7,8 @@ import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -78,6 +80,22 @@ public class RevolverAnimation extends Application {
         fxmlLoader.setLocation(getClass().getResource("Revolver.fxml"));
         Pane root = fxmlLoader.load();
         controller = fxmlLoader.getController();
+
+        // 1. Load the image of the revolver.
+        Image image = new Image("file:Files/images/revolver outline 600x600.png");
+
+        // 2. Create the ImageView container
+        ImageView imageView = new ImageView(image);
+
+        //**TODO ? needed  3. (Optional) Adjust properties like size and position
+        imageView.setX(0);
+        imageView.setY(0);
+        imageView.setFitWidth(600);
+        imageView.setFitHeight(600);
+        imageView.setPreserveRatio(true);
+
+        // 4. Add the ImageView to your Group
+        controller.revolver.getChildren().add(imageView);
 
         // Show the initial orientation (top center shooting for Auto,
         // bottom center intake for TeleOp). It's not necessary to
