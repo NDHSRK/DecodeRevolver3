@@ -26,22 +26,4 @@ public class RevolverController {
     @FXML
     public Circle bottom_right;
 
-    @FXML
-    public Line center_to_top_divider;
-
-    @FXML
-    public Line lower_left_divider;
-
-    @FXML
-    public Line lower_right_divider;
-
-    @FXML
-    public Line upper_left_divider;
-
-    @FXML
-    public Line upper_right_divider;
-
-    @FXML
-    public Line center_to_bottom_divider;
-
 }

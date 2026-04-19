@@ -82,17 +82,19 @@ public class RevolverAnimation extends Application {
         controller = fxmlLoader.getController();
 
         // 1. Load the image of the revolver.
-        Image image = new Image("file:Files/images/revolver outline 600x600.png");
+        Image image = new Image("file:Files/images/revolver outline 600x600 shoot.png");
 
         // 2. Create the ImageView container
         ImageView imageView = new ImageView(image);
 
-        //**TODO ? needed  3. (Optional) Adjust properties like size and position
-        imageView.setX(0);
-        imageView.setY(0);
-        imageView.setFitWidth(600);
-        imageView.setFitHeight(600);
-        imageView.setPreserveRatio(true);
+        //**TODO NOT needed  3. (Optional) Adjust properties like size and position
+        //imageView.setX(0);
+        //imageView.setY(0);
+        //imageView.setFitWidth(600);
+        //imageView.setFitHeight(600);
+        //imageView.setPreserveRatio(true);
+
+        //**TODO read in both intake and shoot images and add to the group later.
 
         // 4. Add the ImageView to your Group
         controller.revolver.getChildren().add(imageView);
@@ -281,33 +283,27 @@ public class RevolverAnimation extends Application {
                 case REAR_VIEW_CENTER: {
                     if (pUserInput.opModeType == RevolverMotionTester.OpModeType.AUTO) {
                         formatArtifactForDisplay(displayPosition.topArtifact, value.color);
-                        controller.center_to_bottom_divider.setVisible(true);
                     }
                     else {
                         formatArtifactForDisplay(displayPosition.bottomArtifact, value.color);
-                        controller.center_to_top_divider.setVisible(true);
                     }
                     break;
                 }
                 case REAR_VIEW_LEFT: {
                     if (pUserInput.opModeType == RevolverMotionTester.OpModeType.AUTO) {
                         formatArtifactForDisplay(displayPosition.bottomArtifact, value.color);
-                        controller.upper_left_divider.setVisible(true);
                     }
                     else {
                         formatArtifactForDisplay(displayPosition.topArtifact, value.color);
-                        controller.lower_left_divider.setVisible(true);
                     }
                     break;
                 }
                 case REAR_VIEW_RIGHT: {
                     if (pUserInput.opModeType == RevolverMotionTester.OpModeType.AUTO) {
                         formatArtifactForDisplay(displayPosition.bottomArtifact, value.color);
-                        controller.upper_right_divider.setVisible(true);
                     }
                     else {
                         formatArtifactForDisplay(displayPosition.topArtifact, value.color);
-                        controller.lower_right_divider.setVisible(true);
                     }
                     break;
                 }
