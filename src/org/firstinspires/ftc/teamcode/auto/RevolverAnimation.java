@@ -30,7 +30,7 @@ public class RevolverAnimation extends Application {
     private static final String TAG = RevolverAnimation.class.getSimpleName();
 
     private RevolverController controller;
-    
+
     // Animation of rapid-fire shooting by pattern.
     // One of the main goals of this animation is to keep the class
     // RevolverMotion as close as possible to the one used with the
@@ -90,7 +90,7 @@ public class RevolverAnimation extends Application {
         // First rotate the Revolver into the correct shooting
         // position for the pattern entered by the user.
         Pair<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> firstShot = revolver.setRevolverToShootingOrientation(userInput.artifactPattern,
-                                                 userInput.searchOrder);
+                userInput.searchOrder);
 
         // We need to get the shot order of the artifacts in
         // terms of the JavaFX representation of the Revolver.
@@ -238,91 +238,89 @@ public class RevolverAnimation extends Application {
     // For TELEOP position artifacts at bottom center, upper left, upper right.
     private void initializeRevolverDisplay(RevolverMotionTester.UserInput pUserInput) {
 
-        Image revolverImage = pUserInput.opModeType == RevolverMotionTester.OpModeType.AUTO ?
-            new Image("file:Files/images/revolver outline 600x600 shoot.png") :
-                new Image("file:Files/images/revolver outline 600x600 intake.png");
-        ImageView revolverImageView = new ImageView(revolverImage); // create the ImageView container
-
-        // Add the ImageView to the revolver's Group.
-        controller.revolver.getChildren().add(revolverImageView);
-
-        //**TODO NOT needed  3. (Optional) Adjust properties like size and position
-        //imageView.setX(0);
-        //imageView.setY(0);
-        //imageView.setFitWidth(600);
-        //imageView.setFitHeight(600);
-        //imageView.setPreserveRatio(true);
-
         //**TODO Load the correct revolver and artifact images based
         // on the user's input.
-        //**TODO The artifact Circles are already part of the revolver's Group.
 
-        //Circle circle = new Circle(100, 100, 50); // x, y, radius
-        //Image img = new Image("path/to/your/image.jpg");
-        //circle.setFill(new ImagePattern(img));
+        switch (pUserInput.opModeType) {
+            case RevolverMotionTester.OpModeType.AUTO: {
+                Image revolverImage = new Image("file:Files/images/revolver outline 600x600 shoot.png");
+                ImageView revolverImageView = new ImageView(revolverImage); // create the ImageView container
 
-        EnumMap<RevolverMotion.RevolverTrackingPosition, ArtifactDisplayPosition>
-                artifactDisplayMap = new EnumMap<>(RevolverMotion.RevolverTrackingPosition.class);
+                // Add the ImageView to the revolver's Group.
+                controller.revolver.getChildren().add(revolverImageView);
 
-        // Initialize the map that correlates the user's view of the
-        // Revolver with the JavaFX representation of the artifacts.
-        artifactDisplayMap.put(RevolverMotion.RevolverTrackingPosition.REAR_VIEW_CENTER,
-                new ArtifactDisplayPosition(controller.top_center, controller.bottom_center));
+                for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pUserInput.revolverTracking.entrySet()) {
+                    RevolverMotion.RevolverTrackingPosition key = entry.getKey();
+                    RevolverMotion.RevolverSlotInfo value = entry.getValue();
 
-        artifactDisplayMap.put(RevolverMotion.RevolverTrackingPosition.REAR_VIEW_LEFT,
-                new ArtifactDisplayPosition(controller.top_left, controller.bottom_left));
-
-        artifactDisplayMap.put(RevolverMotion.RevolverTrackingPosition.REAR_VIEW_RIGHT,
-                new ArtifactDisplayPosition(controller.top_right, controller.bottom_right));
-
-        for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pUserInput.revolverTracking.entrySet()) {
-            RevolverMotion.RevolverTrackingPosition key = entry.getKey();
-            RevolverMotion.RevolverSlotInfo value = entry.getValue();
-            ArtifactDisplayPosition displayPosition = artifactDisplayMap.get(key);
-
-            switch (key) {
-                case REAR_VIEW_CENTER: {
-                    if (pUserInput.opModeType == RevolverMotionTester.OpModeType.AUTO) {
-                        formatArtifactForDisplay(displayPosition.topArtifact, value.color);
+                    switch (key) {
+                        case REAR_VIEW_CENTER: {
+                            formatArtifactForDisplay(controller.top_center, value.color);
+                            break;
+                        }
+                        case REAR_VIEW_LEFT: {
+                            formatArtifactForDisplay(controller.bottom_left, value.color);
+                            break;
+                        }
+                        case REAR_VIEW_RIGHT: {
+                            formatArtifactForDisplay(controller.bottom_right, value.color);
+                            break;
+                        }
+                        default:
+                            throw new AutonomousRobotException(TAG, "Unsupported Revolver position " + key);
                     }
-                    else {
-                        formatArtifactForDisplay(displayPosition.bottomArtifact, value.color);
-                    }
-                    break;
                 }
-                case REAR_VIEW_LEFT: {
-                    if (pUserInput.opModeType == RevolverMotionTester.OpModeType.AUTO) {
-                        formatArtifactForDisplay(displayPosition.bottomArtifact, value.color);
-                    }
-                    else {
-                        formatArtifactForDisplay(displayPosition.topArtifact, value.color);
-                    }
-                    break;
-                }
-                case REAR_VIEW_RIGHT: {
-                    if (pUserInput.opModeType == RevolverMotionTester.OpModeType.AUTO) {
-                        formatArtifactForDisplay(displayPosition.bottomArtifact, value.color);
-                    }
-                    else {
-                        formatArtifactForDisplay(displayPosition.topArtifact, value.color);
-                    }
-                    break;
-                }
-                default:
-                    throw new AutonomousRobotException(TAG, "Unsupported Revolver position " + key);
+                break;
             }
+
+            case RevolverMotionTester.OpModeType.TELEOP: {
+                Image revolverImage = new Image("file:Files/images/revolver outline 600x600 intake.png");
+                ImageView revolverImageView = new ImageView(revolverImage); // create the ImageView container
+
+                // Add the ImageView to the revolver's Group.
+                controller.revolver.getChildren().add(revolverImageView);
+                for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pUserInput.revolverTracking.entrySet()) {
+                    RevolverMotion.RevolverTrackingPosition key = entry.getKey();
+                    RevolverMotion.RevolverSlotInfo value = entry.getValue();
+
+                    switch (key) {
+                        case REAR_VIEW_CENTER: {
+                            formatArtifactForDisplay(controller.bottom_center, value.color);
+                            break;
+                        }
+                        case REAR_VIEW_LEFT: {
+                            formatArtifactForDisplay(controller.top_left, value.color);
+                            break;
+                        }
+                        case REAR_VIEW_RIGHT: {
+                            formatArtifactForDisplay(controller.top_right, value.color);
+                            break;
+                        }
+                        default:
+                            throw new AutonomousRobotException(TAG, "Unsupported Revolver position " + key);
+                    }
+                }
+                break;
+            }
+
+            default:
+                throw new AutonomousRobotException(TAG, "Unsupported OpModeType " + pUserInput.opModeType);
         }
     }
+
+    //**TODO The artifact Circles are already part of the revolver's Group.
+
+    //Circle circle = new Circle(100, 100, 50); // x, y, radius
+    //Image img = new Image("path/to/your/image.jpg");
+    //circle.setFill(new ImagePattern(img));
 
     // Draw an artifact circle with the colors for the
     // animation.
     private void formatArtifactForDisplay(Circle pCircle, RobotConstantsDecode.ArtifactColor pColor) {
         switch (pColor) {
-            case GREEN ->
-                pCircle.setFill(Color.GREEN);
+            case GREEN -> pCircle.setFill(Color.GREEN);
 
-            case PURPLE ->
-                pCircle.setFill(Color.PURPLE);
+            case PURPLE -> pCircle.setFill(Color.PURPLE);
 
             case UNKNOWN -> {
                 pCircle.setFill(Color.LIGHTGRAY);
@@ -334,8 +332,7 @@ public class RevolverAnimation extends Application {
                 pCircle.setStroke(Color.BLACK);
                 pCircle.setStrokeWidth(10.0);
             }
-            default ->
-                throw new AutonomousRobotException(TAG, "Invalid artifact color " + pColor);
+            default -> throw new AutonomousRobotException(TAG, "Invalid artifact color " + pColor);
         }
 
         pCircle.setVisible(true);
