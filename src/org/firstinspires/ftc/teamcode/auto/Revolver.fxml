@@ -3,40 +3,18 @@
 <?import javafx.scene.Group?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Line?>
 
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.image.Image?>
 <Pane fx:id="revolverPane" prefHeight="600.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.firstinspires.ftc.teamcode.auto.RevolverController">
    <Group fx:id="revolver">
-      <!-- Note: the coordinates of the center point of each artifact are determined using
-           the trigonometric formulas below with a radius (distance from the center) of 150.
-           The center point of the revolver Pane is 300, 300. -->
-
-      <!-- FTC 60 degrees; std 150 degrees -> sine 0.5, cosine -0.8660 -->
-      <!-- X -> 300 + (150 * -0.8660) -> 300 + -129.9 = 170.1; Y -> 300 + 150 [for JavaFX -150] = 150 -->
-      <Circle fx:id="top_left" centerX="170.1" centerY="150.0" fill="#7d1fff" radius="100.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
-
-      <!-- FTC -60 degrees; std 30 degrees -> sine 0.5, cosine 0.8660 -->
-      <!-- X -> 300 + (150 * 0.8660) -> 300 + 129.9 = 429.9; Y -> 300 + 150 [for JavaFX -150] = 150 -->
-      <Circle fx:id="top_right" centerX="429.9" centerY="150.0" fill="#7d1fff" radius="100.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
-
-      <!-- FTC 180 degrees; std 270 degrees -> sine -1.0, cosine 0.0 -->
-      <!-- X -> 300 + (150 * 0.0) = 300; Y -> 300 + -150 [for JavaFX 150] = 450 -->
-      <Circle fx:id="bottom_center" centerX="300.0" centerY="450.0" fill="#1fff81" radius="100.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
-
-      <Circle fx:id="center_shaft" centerX="300.0" centerY="300.0" radius="13.0" stroke="BLACK" strokeType="INSIDE" />
-
-      <!-- FTC 0 degrees; std 90 degrees -> sine 1.0, cosine 0.0 -->
-      <!-- X -> 300 + (150 * 0) = 300; Y -> 300 + 150 [for JavaFX -150] = 150 -->
-      <Circle id="top_center" fx:id="top_center" centerX="300.0" centerY="150.0" fill="#1fff81" radius="100.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
-
-      <!-- FTC 120 degrees; std 210 degrees -> sine -0.5, cosine -0.8660 -->
-      <!-- X -> 300 + (150 * -0.8660) -> 300 + -129.9 = 170.1; Y -> 300 + -150 [for JavaFX +150] = 450 -->
-      <Circle fx:id="bottom_left" centerX="160.0" centerY="375.0" fill="#7d1fff" radius="100.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
-
-      <!-- FTC -120 degrees; std -30 degrees = 330 degrees -> sine -0.5, cosine 0.8660 -->
-      <!-- X -> 300 + (150 * 0.8660) -> 300 + 129.9 = 429.9; Y -> 300 + -150 [for JavaFX +150] = 450 -->
-      <Circle fx:id="bottom_right" centerX="460.0" centerY="375.0" fill="#7d1fff" radius="100.0" stroke="BLACK" strokeType="INSIDE" visible="false" />
+      <!-- Note: with Joey's image of the revolver (derived from a Fusion svg) we can't get
+           the coordinates of the center point of each artifact because the slots are not
+           perfect circles. So we overlaid the artifacts on the png of the revolver in Gimp
+           and got their center coordinates by sight. -->
+      <Circle fx:id="top_center" centerX="300.0" centerY="150.0" radius="100.0" visible="false" />
+      <Circle fx:id="top_left" centerX="165.0" centerY="220.0" radius="100.0" visible="false" />
+      <Circle fx:id="top_right" centerX="438" centerY="220.0" radius="100.0" visible="false" />
+      <Circle fx:id="bottom_left" centerX="165.0" centerY="380.0" radius="100.0" visible="false" />
+      <Circle fx:id="bottom_right" centerX="438.0" centerY="380.0" radius="100.0" visible="false" />
+      <Circle fx:id="bottom_center" centerX="300.0" centerY="450.0" radius="100.0" visible="false" />
    </Group>
 </Pane>

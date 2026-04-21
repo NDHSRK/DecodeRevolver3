@@ -11,6 +11,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -81,32 +82,8 @@ public class RevolverAnimation extends Application {
         Pane root = fxmlLoader.load();
         controller = fxmlLoader.getController();
 
-        // 1. Load the image of the revolver.
-        Image image = new Image("file:Files/images/revolver outline 600x600 shoot.png");
-
-        // 2. Create the ImageView container
-        ImageView imageView = new ImageView(image);
-
-        //**TODO NOT needed  3. (Optional) Adjust properties like size and position
-        //imageView.setX(0);
-        //imageView.setY(0);
-        //imageView.setFitWidth(600);
-        //imageView.setFitHeight(600);
-        //imageView.setPreserveRatio(true);
-
-        //**TODO read in both intake and shoot images and add to the group later.
-
-        // 4. Add the ImageView to your Group
-        controller.revolver.getChildren().add(imageView);
-
         // Show the initial orientation (top center shooting for Auto,
-        // bottom center intake for TeleOp). It's not necessary to
-        // actually rotate the dividing lines and artifacts. Place 6
-        // invisible artifacts and 6 invisible dividing lines in the
-        // fxml: 3 artifacts and 3 lines for the shooting orientation
-        // and 3 artifacts and 3 lines for the intake orientation.
-        // The make the correct objects visible for the initial
-        // display.
+        // bottom center intake for TeleOp).
         initializeRevolverDisplay(userInput);
 
         // Now show the rapid fire.
@@ -255,10 +232,34 @@ public class RevolverAnimation extends Application {
         pStage.show();
     }
 
+    //**TODO 4/20/2026 STOPPED HERE ... REWORK ...
     // Initialize the display from the user's input.
     // For Auto position artifacts at top center, lower left, lower right.
     // For TELEOP position artifacts at bottom center, upper left, upper right.
     private void initializeRevolverDisplay(RevolverMotionTester.UserInput pUserInput) {
+
+        Image revolverImage = pUserInput.opModeType == RevolverMotionTester.OpModeType.AUTO ?
+            new Image("file:Files/images/revolver outline 600x600 shoot.png") :
+                new Image("file:Files/images/revolver outline 600x600 intake.png");
+        ImageView revolverImageView = new ImageView(revolverImage); // create the ImageView container
+
+        // Add the ImageView to the revolver's Group.
+        controller.revolver.getChildren().add(revolverImageView);
+
+        //**TODO NOT needed  3. (Optional) Adjust properties like size and position
+        //imageView.setX(0);
+        //imageView.setY(0);
+        //imageView.setFitWidth(600);
+        //imageView.setFitHeight(600);
+        //imageView.setPreserveRatio(true);
+
+        //**TODO Load the correct revolver and artifact images based
+        // on the user's input.
+        //**TODO The artifact Circles are already part of the revolver's Group.
+
+        //Circle circle = new Circle(100, 100, 50); // x, y, radius
+        //Image img = new Image("path/to/your/image.jpg");
+        //circle.setFill(new ImagePattern(img));
 
         EnumMap<RevolverMotion.RevolverTrackingPosition, ArtifactDisplayPosition>
                 artifactDisplayMap = new EnumMap<>(RevolverMotion.RevolverTrackingPosition.class);
