@@ -38,11 +38,6 @@ public class RevolverAnimation extends Application {
     // are not called or commented out.
     // The animation also does not include the intake of artifacts.
 
-    //**TODO Alignment of the Revolver nodes including the divider
-    // lines needs refinement - use trigonometry for the ending
-    // coordinates of the divider lines and the placement of the
-    // center points of all artifacts.
-
     //**TODO Merge in the UI that will take the place of RevolverMotionTester.
 
     //**TODO Need a play/replay button
@@ -50,7 +45,6 @@ public class RevolverAnimation extends Application {
     //**TODO Need labels for slots. The labels should remain horizontal even
     // as the revolver rotates.
 
-    //**TODO Instead of simple divider lines use fillable Paths with arcs.
     @Override
     public void start(final Stage pStage) throws IOException, InterruptedException {
 
@@ -232,14 +226,10 @@ public class RevolverAnimation extends Application {
         pStage.show();
     }
 
-    //**TODO 4/20/2026 STOPPED HERE ... REWORK ...
     // Initialize the display from the user's input.
     // For Auto position artifacts at top center, lower left, lower right.
     // For TELEOP position artifacts at bottom center, upper left, upper right.
     private void initializeRevolverDisplay(RevolverMotionTester.UserInput pUserInput) {
-
-        //**TODO Load the correct revolver and artifact images based
-        // on the user's input.
 
         switch (pUserInput.opModeType) {
             case RevolverMotionTester.OpModeType.AUTO: {
@@ -308,25 +298,28 @@ public class RevolverAnimation extends Application {
         }
     }
 
-    //**TODO The artifact Circles are already part of the revolver's Group.
-
-    //Circle circle = new Circle(100, 100, 50); // x, y, radius
-    //Image img = new Image("path/to/your/image.jpg");
-    //circle.setFill(new ImagePattern(img));
-
-    // Draw an artifact circle with the colors for the
-    // animation.
+    // Draw an artifact with the user's selected color.
     private void formatArtifactForDisplay(Circle pCircle, RobotConstantsDecode.ArtifactColor pColor) {
+
         switch (pColor) {
-            case GREEN -> pCircle.setFill(Color.GREEN);
+            case GREEN -> {
+                Image greenArtifact = new Image("file:Files/images/Artifact green 200x200.png");
+                pCircle.setFill(new ImagePattern(greenArtifact));
+            }
 
-            case PURPLE -> pCircle.setFill(Color.PURPLE);
+            case PURPLE -> {
+                Image purpleArtifact = new Image("file:Files/images/Artifact purple 200x200.png");
+                pCircle.setFill(new ImagePattern(purpleArtifact));
+            }
 
+            //**TODO rotating text "Unknown"
             case UNKNOWN -> {
                 pCircle.setFill(Color.LIGHTGRAY);
                 pCircle.setStroke(Color.RED);
                 pCircle.setStrokeWidth(10.0);
             }
+
+            //**TODO rotating text "Empty"
             case NPOS -> {
                 pCircle.setFill(Color.LIGHTGRAY);
                 pCircle.setStroke(Color.BLACK);
