@@ -11,21 +11,17 @@ public class RobotConstantsDecode {
     // Obelisk patterns indexed by AprilTag identifiers
     // Tag family: 36h11
     // Obelisk tag id 21: pattern GPP
-    public static final Integer obeliskAprilTagGPP = Integer.valueOf(21);
 
-    // Obelisk tag id 22: pattern PGP
-    public static final Integer obeliskAprilTagPGP = Integer.valueOf(22);
+    //!! For the Revolver simulation an enum is better ...
+    public enum ObeliskPattern { GREEN_PURPLE_PURPLE, PURPLE_GREEN_PURPLE, PURPLE_PURPLE_GREEN }
 
-    // Obelisk tag id 23: pattern PPG
-    public static final Integer obeliskAprilTagPPG = Integer.valueOf(23);
-
-    public static final Map<Integer, List<ArtifactColor>> obeliskPatterns;
+    public static final Map<ObeliskPattern, List<ArtifactColor>> obeliskPatterns;
 
     static {
         obeliskPatterns = new HashMap<>();
-        obeliskPatterns.put(obeliskAprilTagGPP, new ArrayList<>(Arrays.asList(ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE)));
-        obeliskPatterns.put(obeliskAprilTagPGP, new ArrayList<>(Arrays.asList(ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE)));
-        obeliskPatterns.put(obeliskAprilTagPPG, new ArrayList<>(Arrays.asList(ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN)));
+        obeliskPatterns.put(ObeliskPattern.GREEN_PURPLE_PURPLE, new ArrayList<>(Arrays.asList(ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE)));
+        obeliskPatterns.put(ObeliskPattern.PURPLE_GREEN_PURPLE, new ArrayList<>(Arrays.asList(ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE)));
+        obeliskPatterns.put(ObeliskPattern.PURPLE_PURPLE_GREEN, new ArrayList<>(Arrays.asList(ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN)));
     }
 
 }

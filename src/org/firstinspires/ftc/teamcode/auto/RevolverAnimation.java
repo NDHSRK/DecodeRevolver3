@@ -6,13 +6,20 @@ import javafx.animation.SequentialTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
@@ -22,7 +29,6 @@ import org.firstinspires.ftc.ftcdevcommon.platform.intellij.WorkingDirectory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +46,7 @@ public class RevolverAnimation extends Application {
 
     //**TODO Merge in the UI that will take the place of RevolverMotionTester.
 
-    //**TODO Need a play/replay button
+    //**TODO ?Need replay button
 
     //**TODO Need labels for slots. The labels should remain horizontal even
     // as the revolver rotates.
@@ -53,38 +59,80 @@ public class RevolverAnimation extends Application {
                 logDirPath);
         System.out.println("Opened " + RobotLogCommon.LogIdentifier.AUTO_LOG + " with status " + openStatus);
 
-        // Get user input from RevolverMotionTester.
-        //**TODO Later make an FX GridPane with OpModeType, position, slot,
-        // color, and pattern on the right and a master play/replay button
-        // in the revolver Pane on the left.
+        //**TODO Merge in components of the project DecodeRevolverUI.
+        // Here's how this works:
+        // First show a modal popup radio button for OpMode selection.
+        // This must be done first because the driver's selection
+        // determines the appearance of the options in the next screen.
+        RadioButton selectedOpMode = showOpModePopup(pStage);
 
-        // Note: for user input we use the choices "AUTO" and "TELEOP"
-        // but internally we use their RevolverMotion.SearchOrder
-        // equivalents: IN_PLACE and ON_TRANSITION, respectively.
+        // If the driver selects the radio button for "Auto top shoot"
+        // then the UI for slot and color selection will be laid out
+        // in the order CENTER, LEFT, RIGHT. If the user selects
+        // "TeleOp bottom intake" then the order will be LEFT, RIGHT,
+        // CENTER.
 
-        RevolverMotionTester revolverMotionTester = new RevolverMotionTester();
-        RevolverMotionTester.UserInput userInput = revolverMotionTester.getUserInput();
-        RevolverMotion revolver = new RevolverMotion(userInput.revolverTracking);
-
-        FXMLLoader fxmlLoader = new FXMLLoader();
-
-        // For the next line to work with later versions of JavaFX,
+        // For the next 2 lines to work with later versions of JavaFX,
         // the fxml file must be under the same package as the current
         // class but in the resources folder. But in the current version
         // the file must be in the same package as the code.
+        FXMLLoader fxmlLoader = new FXMLLoader();
         fxmlLoader.setLocation(getClass().getResource("Revolver.fxml"));
-        Pane root = fxmlLoader.load();
+        BorderPane root = fxmlLoader.load();
         controller = fxmlLoader.getController();
+
+        // Show the artifact selection combo box first.
+        // 1. Create the ComboBox.
+        ComboBox<String> artifactCombo = new ComboBox<>();
+        artifactCombo.setPrefWidth(Region.USE_COMPUTED_SIZE);
+
+        // 2. Add three choices
+        artifactCombo.getItems().addAll(RobotConstantsDecode.ObeliskPattern.GREEN_PURPLE_PURPLE.toString(),
+                RobotConstantsDecode.ObeliskPattern.PURPLE_GREEN_PURPLE.toString(),
+                RobotConstantsDecode.ObeliskPattern.PURPLE_PURPLE_GREEN.toString());
+
+        // 3. Set PURPLE_GREEN_PURPLE as the default
+        artifactCombo.setValue(RobotConstantsDecode.ObeliskPattern.PURPLE_GREEN_PURPLE.toString());
+
+        // Add to the GridPane at the correct row index for the selected OpMode.
+        // gridPane.add(child, columnIndex, rowIndex, columnSpan, rowSpan);
+        controller.uiGridPane.add(artifactCombo, 1, 0, GridPane.REMAINING, 1); // column 1, row 0
+
+        int centerRowIndex;
+        int leftRowIndex;
+        int rightRowIndex;
+        if (selectedOpMode.getText().equals("Auto top shoot")) {
+            centerRowIndex = 2;
+            controller.rowOneLabel.setText("CENTER");
+            leftRowIndex = 5;
+            controller.rowTwoLabel.setText("LEFT");
+            rightRowIndex = 8;
+            controller.rowThreeLabel.setText("RIGHT");
+        } else { // must be TeleOp
+            leftRowIndex = 2;
+            controller.rowOneLabel.setText("LEFT");
+            rightRowIndex = 5;
+            controller.rowTwoLabel.setText("RIGHT");
+            centerRowIndex = 8;
+            controller.rowThreeLabel.setText("CENTER");
+        }
+
+        //**TODO STOPPED HERE 5/25/26 16:25 ...
+
+        // Note: for driver input we use the choices "AUTO" and "TELEOP"
+        // but internally we use their RevolverMotion.SearchOrder
+        // equivalents: IN_PLACE and ON_TRANSITION, respectively.
+        RevolverMotion revolver = new RevolverMotion(driverInput.revolverTracking);
 
         // Show the initial orientation (top center shooting for Auto,
         // bottom center intake for TeleOp).
-        initializeRevolverDisplay(userInput);
+        initializeRevolverDisplay(driverInput);
 
         // Now show the rapid fire.
         // First rotate the Revolver into the correct shooting
         // position for the pattern entered by the user.
-        Pair<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> firstShot = revolver.setRevolverToShootingOrientation(userInput.artifactPattern,
-                userInput.searchOrder);
+        Pair<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> firstShot = revolver.setRevolverToShootingOrientation(driverInput.artifactPattern,
+                driverInput.searchOrder);
 
         // We need to get the shot order of the artifacts in
         // terms of the JavaFX representation of the Revolver.
@@ -131,7 +179,7 @@ public class RevolverAnimation extends Application {
         double rotationToShootingPosition;
         List<Circle> fxShotOrder = new ArrayList<>();
 
-        switch (userInput.searchOrder) {
+        switch (driverInput.searchOrder) {
             case IN_PLACE: {
                 RobotLogCommon.d(TAG, "Auto: in-place rotation of slot " + firstShot.second.revolverSlot.name() + " at tracking position " + firstShot.first + " with color " + firstShot.second.color + " to the center");
 
@@ -171,15 +219,15 @@ public class RevolverAnimation extends Application {
                     case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_LEFT: {
                         rotationToShootingPosition = 60.0;
                         fxShotOrder.add(controller.top_left);
-                        fxShotOrder.add(controller.top_right);
                         fxShotOrder.add(controller.bottom_center);
+                        fxShotOrder.add(controller.top_right);
                         break;
                     }
                     case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_CENTER: {
                         rotationToShootingPosition = 180.0;
                         fxShotOrder.add(controller.bottom_center);
-                        fxShotOrder.add(controller.top_left);
                         fxShotOrder.add(controller.top_right);
+                        fxShotOrder.add(controller.top_left);
 
                         break;
                     }
@@ -197,7 +245,7 @@ public class RevolverAnimation extends Application {
                 break;
             }
             default:
-                throw new AutonomousRobotException(TAG, "No such search order " + userInput.searchOrder);
+                throw new AutonomousRobotException(TAG, "No such search order " + driverInput.searchOrder);
         }
 
         // According to the shot order set above, rotate all three
@@ -226,12 +274,52 @@ public class RevolverAnimation extends Application {
         pStage.show();
     }
 
+    private RadioButton showOpModePopup(Stage pOwner) {
+        Stage popupStage = new Stage();
+        // Blocks interaction with the main window until this is closed
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.initOwner(pOwner);
+
+        // Radio button for the initial orientation of the Revolver:
+        // Auto -> top center shoot; TeleOp -> bottom center intake.
+        ToggleGroup opModeGroup = new ToggleGroup();
+        RadioButton rbAuto = new RadioButton("Auto top shoot");
+        rbAuto.setSelected(true);
+        rbAuto.setToggleGroup(opModeGroup);
+
+        RadioButton rbTeleOp = new RadioButton("TeleOp bottom intake");
+        rbTeleOp.setToggleGroup(opModeGroup);
+
+        // Lay out side-by-side.
+        HBox hboxOpMode = new HBox(15); // 15px spacing
+        // Indent by 10 pixels on the left
+        hboxOpMode.setPadding(new Insets(0, 0, 0, 10));
+        hboxOpMode.getChildren().addAll(rbAuto, rbTeleOp);
+
+        Button doneButton = new Button("Done");
+        doneButton.setOnAction(e -> {
+            // Close the popup window
+            ((Stage) doneButton.getScene().getWindow()).close();
+        });
+
+        VBox vLayout = new VBox(10); // 10 is the spacing between elements
+        vLayout.getChildren().addAll(hboxOpMode, doneButton);
+        vLayout.setAlignment(Pos.CENTER);
+
+        Scene popupScene = new Scene(vLayout, 275, 100);
+        popupStage.setScene(popupScene);
+        popupStage.setTitle("Select an OpMode");
+        popupStage.showAndWait();
+
+        return (RadioButton) opModeGroup.getSelectedToggle();
+    }
+
     // Initialize the display from the user's input.
     // For Auto position artifacts at top center, lower left, lower right.
     // For TELEOP position artifacts at bottom center, upper left, upper right.
-    private void initializeRevolverDisplay(RevolverMotionTester.UserInput pUserInput) {
+    private void initializeRevolverDisplay(RevolverMotionTester.DriverInput pDriverInput) {
 
-        switch (pUserInput.opModeType) {
+        switch (pDriverInput.opModeType) {
             case RevolverMotionTester.OpModeType.AUTO: {
                 Image revolverImage = new Image("file:Files/images/revolver outline 600x600 shoot.png");
                 ImageView revolverImageView = new ImageView(revolverImage); // create the ImageView container
@@ -239,7 +327,7 @@ public class RevolverAnimation extends Application {
                 // Add the ImageView to the revolver's Group.
                 controller.revolver.getChildren().add(revolverImageView);
 
-                for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pUserInput.revolverTracking.entrySet()) {
+                for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pDriverInput.revolverTracking.entrySet()) {
                     RevolverMotion.RevolverTrackingPosition key = entry.getKey();
                     RevolverMotion.RevolverSlotInfo value = entry.getValue();
 
@@ -269,7 +357,7 @@ public class RevolverAnimation extends Application {
 
                 // Add the ImageView to the revolver's Group.
                 controller.revolver.getChildren().add(revolverImageView);
-                for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pUserInput.revolverTracking.entrySet()) {
+                for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pDriverInput.revolverTracking.entrySet()) {
                     RevolverMotion.RevolverTrackingPosition key = entry.getKey();
                     RevolverMotion.RevolverSlotInfo value = entry.getValue();
 
@@ -294,7 +382,7 @@ public class RevolverAnimation extends Application {
             }
 
             default:
-                throw new AutonomousRobotException(TAG, "Unsupported OpModeType " + pUserInput.opModeType);
+                throw new AutonomousRobotException(TAG, "Unsupported OpModeType " + pDriverInput.opModeType);
         }
     }
 

@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.auto;
 
 import org.firstinspires.ftc.ftcdevcommon.AutonomousRobotException;
 import org.firstinspires.ftc.ftcdevcommon.platform.intellij.RobotLogCommon;
-import org.firstinspires.ftc.ftcdevcommon.platform.intellij.WorkingDirectory;
 
 import java.util.*;
 
@@ -109,10 +108,10 @@ public class RevolverMotionTester {
         RobotLogCommon.d(TAG, "Artifact pattern colors " + firstColor + ", " + secondColor + ", " + thirdColor);
     }
 
-    public UserInput getUserInput() {
+    public DriverInput getUserInput() {
         EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking =
                 opModeType == OpModeType.AUTO ? autoRevolverTracking : teleopRevolverTracking;
-        return new UserInput(opModeType, searchOrder, revolverTracking, artifactPattern);
+        return new DriverInput(opModeType, searchOrder, revolverTracking, artifactPattern);
     }
 
     private boolean createPostIntakeTracking(RevolverServo.RevolverSlot pSlot) {
@@ -151,15 +150,15 @@ public class RevolverMotionTester {
         return true;
     }
 
-    public static class UserInput {
+    public static class DriverInput {
         public final OpModeType opModeType;
         public final RevolverMotion.SearchOrder searchOrder;
         public final EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
         public final List<RobotConstantsDecode.ArtifactColor> artifactPattern;
 
-        UserInput(OpModeType pOpModeType, RevolverMotion.SearchOrder pSearchOrder,
-                  EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> pRevolverTracking,
-                  List<RobotConstantsDecode.ArtifactColor> pArtifactPattern) {
+        DriverInput(OpModeType pOpModeType, RevolverMotion.SearchOrder pSearchOrder,
+                    EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> pRevolverTracking,
+                    List<RobotConstantsDecode.ArtifactColor> pArtifactPattern) {
             opModeType = pOpModeType;
             searchOrder = pSearchOrder;
             revolverTracking = pRevolverTracking;
