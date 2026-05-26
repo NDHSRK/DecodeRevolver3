@@ -165,22 +165,28 @@ public class RevolverAnimation extends Application {
             String centerColor = getSelectedRadioButton(colorGroupCenter);
             if (centerSlot != null && centerColor != null)
                 createPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor);
-            else
-                return;
+            else {
+                alertSlotSelectionMissing(UIPositionLabel.CENTER.toString());
+                return; //**TODO don't really want to return; allow driver to select slot(s)
+            }
 
             String leftSlot = getSelectedRadioButton(slotGroupLeft);
             String leftColor = getSelectedRadioButton(colorGroupLeft);
             if (leftSlot != null && leftColor != null)
                 createPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor);
-            else
-                return;
+            else {
+                alertSlotSelectionMissing(UIPositionLabel.LEFT.toString());
+                return; //**TODO don't really want to return; allow driver to select slot(s)
+            }
 
             String rightSlot = getSelectedRadioButton(slotGroupRight);
             String rightColor = getSelectedRadioButton(colorGroupRight);
             if (rightSlot != null && rightColor != null)
                 createPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor);
-            else
-                return;
+            else {
+                alertSlotSelectionMissing(UIPositionLabel.RIGHT.toString());
+                return; //**TODO don't really want to return; allow driver to select slot(s)
+            }
         }
 
         // From the ComboBox selection for the artifact pattern
@@ -206,164 +212,26 @@ public class RevolverAnimation extends Application {
         }
 
         driverInput = new DriverInput(opModeType, searchOrder, revolverTracking, patternColors);
+
         // Get the final slot and color selections when the driver hits the Play button.
         // Add to the 1st column (index 0) of the 12th row (index 11).
         Button playButton = new Button("Play");
         playButton.setStyle("-fx-font-weight: bold;");
         controller.uiGridPane.add(playButton, 0, 11);
         playButton.setOnAction(e -> {
-            //**TODO For now Close the popup window; in the real application
-            // gray out the Play button and run the simulation. Then re-enable
-            // when done.
+            playButton.setDisable(true);
+
+            // Show the initial orientation (top center shooting for Auto,
+            // bottom center intake for TeleOp).
+            initializeRevolverDisplay(driverInput);
+
+            rapidFire(); // run the simulation
+
+            //**TODO For now Close the main window; in the real application
+            // you may want to support re-configuring and re-running.
+            playButton.setDisable(false);
             ((Stage) playButton.getScene().getWindow()).close();
         });
-
-        // Note: for driver input we use the choices "AUTO" and "TELEOP"
-        // but internally we use their RevolverMotion.SearchOrder
-        // equivalents: IN_PLACE and ON_TRANSITION, respectively.
-        RevolverMotion revolver = new RevolverMotion(driverInput.revolverTracking);
-
-        // Show the initial orientation (top center shooting for Auto,
-        // bottom center intake for TeleOp).
-        initializeRevolverDisplay(driverInput);
-
-        //**TODO All of this need to be put into a method that
-        // will be called in playButton.setOnAction above ...
-        // Now show the rapid fire.
-        // First rotate the Revolver into the correct shooting
-        // position for the pattern entered by the user.
-        Pair<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> firstShot = revolver.setRevolverToShootingOrientation(driverInput.artifactPattern,
-                driverInput.searchOrder);
-
-        // We need to get the shot order of the artifacts in
-        // terms of the JavaFX representation of the Revolver.
-        // For example, say that the JavaFX Revolver is in the
-        // shooting orientation and the artifacts are in the
-        // following positions: green at fx:id="top_center"; purple
-        // at fx:id="bottom_left"; purple at fx:id="bottom_right".
-        // If our rapid-fire algorithm determines that the purple
-        // artifact at fx:id="bottom_left" is the first to shoot,
-        // we'll rotate clockwise so that fx:id="bottom_left" is
-        // at the top, fx:id="top_center" is at the lower right,
-        // and fx:id="bottom_right" is at the lower left. Note
-        // that the fx:id(s) of the artifacts no longer coincide
-        // with the user's view of the Revolver. But this is how
-        // JavaFX works - so we'll have to create a mapping so
-        // that we can tell which JavaFX artifact (a Circle with
-        // a certain fx:id) is at which position in the user's
-        // view of the Revolver.
-
-        // Following the example above: after shooting
-        // fx:id="bottom_left" from the top center position, we'd
-        // rotate the Revolver so that fx:id="bottom_right" is at
-        // the top center and fx:id="top_center" is at the bottom
-        // left. We'd fire fx:id="bottom_left" from the top center
-        // and rotate again so that fx:id="top_center" is actually
-        // at the top center for the final shot.
-
-        // In summary, we need to know the fx:id of the artifact
-        // rotated into the top shooting position so that we can
-        // animate the shooting motion.
-
-        // We need to know the shot order in terms of fx:id(s).
-        // Auto: CW bottom_left -> viewer's center: bottom_left, bottom_right, top_center
-        // Auto: top_center -> viewer's center (no movement): top_center, bottom_left, bottom_right
-        // Auto: CCW bottom_right -> viewer's center: bottom_right, top_center, bottom_left
-
-        // TeleOp: CW top_left -> viewer's center: top_left, top_right, bottom_center
-        // TeleOp: bottom_center -> viewer's center: bottom_center, top_left, top_right
-        // TeleOp: CCW top_right -> viewer's center: top_right, bottom_center, top_left
-
-        // Set the amount and direction of the JavFX rotation to the top.
-        // Set the shot order.
-        //**TODO Need position and slot info for logging List<Pair<RevolverMotion.RevolverTrackingPosition, Circle>>
-        double rotationToShootingPosition;
-        List<Circle> fxShotOrder = new ArrayList<>();
-
-        switch (driverInput.searchOrder) {
-            case IN_PLACE: {
-                RobotLogCommon.d(TAG, "Auto: in-place rotation of slot " + firstShot.second.revolverSlot.name() + " at tracking position " + firstShot.first + " with color " + firstShot.second.color + " to the center");
-
-                switch (firstShot.first) {
-                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_LEFT: {
-                        rotationToShootingPosition = 120.0;
-                        fxShotOrder.add(controller.bottom_left);
-                        fxShotOrder.add(controller.bottom_right);
-                        fxShotOrder.add(controller.top_center);
-                        break;
-                    }
-                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_CENTER: {
-                        // Do nothing here, already positioned at CENTER.
-                        rotationToShootingPosition = 0.0;
-                        fxShotOrder.add(controller.top_center);
-                        fxShotOrder.add(controller.bottom_left);
-                        fxShotOrder.add(controller.bottom_right);
-                        break;
-                    }
-                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_RIGHT: {
-                        rotationToShootingPosition = -120.0;
-                        fxShotOrder.add(controller.bottom_right);
-                        fxShotOrder.add(controller.top_center);
-                        fxShotOrder.add(controller.bottom_left);
-                        break;
-                    }
-                    default: {
-                        throw new AutonomousRobotException(TAG, "No such revolver slot " + firstShot.first);
-                    }
-                }
-                break;
-            }
-            case ON_TRANSITION: {
-                RobotLogCommon.d(TAG, "TeleOp: transitional rotation of slot " + firstShot.second.revolverSlot.name() + " at tracking position " + firstShot.first + " with color " + firstShot.second.color + " to the center");
-
-                switch (firstShot.first) {
-                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_LEFT: {
-                        rotationToShootingPosition = 60.0;
-                        fxShotOrder.add(controller.top_left);
-                        fxShotOrder.add(controller.bottom_center);
-                        fxShotOrder.add(controller.top_right);
-                        break;
-                    }
-                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_CENTER: {
-                        rotationToShootingPosition = 180.0;
-                        fxShotOrder.add(controller.bottom_center);
-                        fxShotOrder.add(controller.top_right);
-                        fxShotOrder.add(controller.top_left);
-
-                        break;
-                    }
-                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_RIGHT: {
-                        rotationToShootingPosition = -60.0;
-                        fxShotOrder.add(controller.top_right);
-                        fxShotOrder.add(controller.top_left);
-                        fxShotOrder.add(controller.bottom_center);
-                        break;
-                    }
-                    default: {
-                        throw new AutonomousRobotException(TAG, "No such revolver position " + firstShot.first);
-                    }
-                }
-                break;
-            }
-            default:
-                throw new AutonomousRobotException(TAG, "No such search order " + driverInput.searchOrder);
-        }
-
-        // According to the shot order set above, rotate all three
-        // artifacts to top center and shoot. Note that the only
-        // way to make this work was to add each rotation and
-        // shot as a SequentialTransition to an enclosing
-        // SequentialTransition and then play.
-        SequentialTransition rapidFire = new SequentialTransition();
-        for (Circle oneArtifact : fxShotOrder) {
-            RobotLogCommon.d(TAG, "Rotate artifact with fx:id " + oneArtifact.getId() + " " + rotationToShootingPosition + " degrees to top center");
-            //**TODO include " from position " + pos " with slot id " and color " + color.
-
-            rapidFire.getChildren().add(rotateAndShoot(oneArtifact, rotationToShootingPosition));
-            rotationToShootingPosition = 120.0; // rotate 120 degrees CW for the second and third shots
-        }
-
-        rapidFire.play();
 
         pStage.setTitle("FTC Decode: Team 4348 Revolver");
         Scene rootScene = new Scene(root);
@@ -668,6 +536,150 @@ public class RevolverAnimation extends Application {
         pCircle.setVisible(true);
     }
 
+    // Configure the amimation for rapid fire.
+    private void rapidFire() {
+        // First rotate the Revolver into the correct shooting
+        // position for the pattern entered by the user.
+
+        // Note: for driver input we use the choices "AUTO" and "TELEOP"
+        // but internally we use their RevolverMotion.SearchOrder
+        // equivalents: IN_PLACE and ON_TRANSITION, respectively.
+        RevolverMotion revolver = new RevolverMotion(driverInput.revolverTracking);
+
+        Pair<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> firstShot = revolver.setRevolverToShootingOrientation(driverInput.artifactPattern,
+                driverInput.searchOrder);
+
+        // We need to get the shot order of the artifacts in
+        // terms of the JavaFX representation of the Revolver.
+        // For example, say that the JavaFX Revolver is in the
+        // shooting orientation and the artifacts are in the
+        // following positions: green at fx:id="top_center"; purple
+        // at fx:id="bottom_left"; purple at fx:id="bottom_right".
+        // If our rapid-fire algorithm determines that the purple
+        // artifact at fx:id="bottom_left" is the first to shoot,
+        // we'll rotate clockwise so that fx:id="bottom_left" is
+        // at the top, fx:id="top_center" is at the lower right,
+        // and fx:id="bottom_right" is at the lower left. Note
+        // that the fx:id(s) of the artifacts no longer coincide
+        // with the user's view of the Revolver. But this is how
+        // JavaFX works - so we'll have to create a mapping so
+        // that we can tell which JavaFX artifact (a Circle with
+        // a certain fx:id) is at which position in the user's
+        // view of the Revolver.
+
+        // Following the example above: after shooting
+        // fx:id="bottom_left" from the top center position, we'd
+        // rotate the Revolver so that fx:id="bottom_right" is at
+        // the top center and fx:id="top_center" is at the bottom
+        // left. We'd fire fx:id="bottom_left" from the top center
+        // and rotate again so that fx:id="top_center" is actually
+        // at the top center for the final shot.
+
+        // In summary, we need to know the fx:id of the artifact
+        // rotated into the top shooting position so that we can
+        // animate the shooting motion.
+
+        // We need to know the shot order in terms of fx:id(s).
+        // Auto: CW bottom_left -> viewer's center: bottom_left, bottom_right, top_center
+        // Auto: top_center -> viewer's center (no movement): top_center, bottom_left, bottom_right
+        // Auto: CCW bottom_right -> viewer's center: bottom_right, top_center, bottom_left
+
+        // TeleOp: CW top_left -> viewer's center: top_left, top_right, bottom_center
+        // TeleOp: bottom_center -> viewer's center: bottom_center, top_left, top_right
+        // TeleOp: CCW top_right -> viewer's center: top_right, bottom_center, top_left
+
+        // Set the amount and direction of the JavFX rotation to the top.
+        // Set the shot order.
+        //**TODO Need position and slot info for logging List<Pair<RevolverMotion.RevolverTrackingPosition, Circle>>
+        double rotationToShootingPosition;
+        List<Circle> fxShotOrder = new ArrayList<>();
+
+        switch (driverInput.searchOrder) {
+            case IN_PLACE: {
+                RobotLogCommon.d(TAG, "Auto: in-place rotation of slot " + firstShot.second.revolverSlot.name() + " at tracking position " + firstShot.first + " with color " + firstShot.second.color + " to the center");
+
+                switch (firstShot.first) {
+                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_LEFT: {
+                        rotationToShootingPosition = 120.0;
+                        fxShotOrder.add(controller.bottom_left);
+                        fxShotOrder.add(controller.bottom_right);
+                        fxShotOrder.add(controller.top_center);
+                        break;
+                    }
+                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_CENTER: {
+                        // Do nothing here, already positioned at CENTER.
+                        rotationToShootingPosition = 0.0;
+                        fxShotOrder.add(controller.top_center);
+                        fxShotOrder.add(controller.bottom_left);
+                        fxShotOrder.add(controller.bottom_right);
+                        break;
+                    }
+                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_RIGHT: {
+                        rotationToShootingPosition = -120.0;
+                        fxShotOrder.add(controller.bottom_right);
+                        fxShotOrder.add(controller.top_center);
+                        fxShotOrder.add(controller.bottom_left);
+                        break;
+                    }
+                    default: {
+                        throw new AutonomousRobotException(TAG, "No such revolver slot " + firstShot.first);
+                    }
+                }
+                break;
+            }
+            case ON_TRANSITION: {
+                RobotLogCommon.d(TAG, "TeleOp: transitional rotation of slot " + firstShot.second.revolverSlot.name() + " at tracking position " + firstShot.first + " with color " + firstShot.second.color + " to the center");
+
+                switch (firstShot.first) {
+                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_LEFT: {
+                        rotationToShootingPosition = 60.0;
+                        fxShotOrder.add(controller.top_left);
+                        fxShotOrder.add(controller.bottom_center);
+                        fxShotOrder.add(controller.top_right);
+                        break;
+                    }
+                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_CENTER: {
+                        rotationToShootingPosition = 180.0;
+                        fxShotOrder.add(controller.bottom_center);
+                        fxShotOrder.add(controller.top_right);
+                        fxShotOrder.add(controller.top_left);
+
+                        break;
+                    }
+                    case RevolverMotion.RevolverTrackingPosition.REAR_VIEW_RIGHT: {
+                        rotationToShootingPosition = -60.0;
+                        fxShotOrder.add(controller.top_right);
+                        fxShotOrder.add(controller.top_left);
+                        fxShotOrder.add(controller.bottom_center);
+                        break;
+                    }
+                    default: {
+                        throw new AutonomousRobotException(TAG, "No such revolver position " + firstShot.first);
+                    }
+                }
+                break;
+            }
+            default:
+                throw new AutonomousRobotException(TAG, "No such search order " + driverInput.searchOrder);
+        }
+
+        // According to the shot order set above, rotate all three
+        // artifacts to top center and shoot. Note that the only
+        // way to make this work was to add each rotation and
+        // shot as a SequentialTransition to an enclosing
+        // SequentialTransition and then play.
+        SequentialTransition rapidFire = new SequentialTransition();
+        for (Circle oneArtifact : fxShotOrder) {
+            RobotLogCommon.d(TAG, "Rotate artifact with fx:id " + oneArtifact.getId() + " " + rotationToShootingPosition + " degrees to top center");
+            //**TODO include " from position " + pos " with slot id " and color " + color.
+
+            rapidFire.getChildren().add(rotateAndShoot(oneArtifact, rotationToShootingPosition));
+            rotationToShootingPosition = 120.0; // rotate 120 degrees CW for the second and third shots
+        }
+
+        rapidFire.play();
+    }
+
     private SequentialTransition rotateAndShoot(Circle pArtifact, double pRotation) {
         // Rotate the Group with 3 positions.
         RotateTransition rotate1 = new RotateTransition(Duration.millis(2000));
@@ -734,16 +746,6 @@ public class RevolverAnimation extends Application {
             artifactPattern = pArtifactPattern;
         }
 
-    }
-
-    private static class ArtifactDisplayPosition {
-        public final Circle topArtifact;
-        public final Circle bottomArtifact;
-
-        public ArtifactDisplayPosition(Circle pTopArtifact, Circle pBottomArtifact) {
-            topArtifact = pTopArtifact;
-            bottomArtifact = pBottomArtifact;
-        }
     }
 
     public static void main(String[] args) {
