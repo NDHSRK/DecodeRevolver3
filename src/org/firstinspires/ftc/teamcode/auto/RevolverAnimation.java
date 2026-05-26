@@ -65,8 +65,6 @@ public class RevolverAnimation extends Application {
 
     private final EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> teleopRevolverTracking = new EnumMap<>(RevolverMotion.RevolverTrackingPosition.class);
 
-    //**TODO ?Need replay button?
-
     //**TODO Need labels for slots. The labels should remain horizontal even
     // as the revolver rotates.
 
@@ -78,7 +76,6 @@ public class RevolverAnimation extends Application {
                 logDirPath);
         System.out.println("Opened " + RobotLogCommon.LogIdentifier.AUTO_LOG + " with status " + openStatus);
 
-        //**TODO Merge in components of the project DecodeRevolverUI.
         // Here's how this works:
         // First show a modal popup radio button for OpMode selection.
         // This must be done first because the driver's selection
@@ -122,18 +119,18 @@ public class RevolverAnimation extends Application {
         int rightRowIndex;
         if (selectedOpMode.getText().equals("Auto top shoot")) {
             centerRowIndex = 2;
-            controller.rowOneLabel.setText("CENTER"); //**TODO enum? See RobotMotionTester
+            controller.rowOneLabel.setText(UIPositionLabel.CENTER.toString());
             leftRowIndex = 5;
-            controller.rowTwoLabel.setText("LEFT");
+            controller.rowTwoLabel.setText(UIPositionLabel.LEFT.toString());
             rightRowIndex = 8;
-            controller.rowThreeLabel.setText("RIGHT");
+            controller.rowThreeLabel.setText(UIPositionLabel.RIGHT.toString());
         } else { // must be TeleOp
             leftRowIndex = 2;
-            controller.rowOneLabel.setText("LEFT");
+            controller.rowOneLabel.setText(UIPositionLabel.LEFT.toString());
             rightRowIndex = 5;
-            controller.rowTwoLabel.setText("RIGHT");
+            controller.rowTwoLabel.setText(UIPositionLabel.RIGHT.toString());
             centerRowIndex = 8;
-            controller.rowThreeLabel.setText("CENTER");
+            controller.rowThreeLabel.setText(UIPositionLabel.CENTER.toString());
         }
 
         // For each RevolverTrackingPosition create RadioButtons for the slots
@@ -147,79 +144,77 @@ public class RevolverAnimation extends Application {
         setSlotListener(slotGroupLeft, slotGroupCenter, slotGroupRight);
         setSlotListener(slotGroupRight, slotGroupCenter, slotGroupLeft);
 
-        //**TODO Why are these not used -- check UI project.
         // Color Selection.
         ToggleGroup colorGroupCenter = uiColorSelection(controller.uiGridPane, centerRowIndex + COLOR_ROW_OFFSET);
         ToggleGroup colorGroupLeft = uiColorSelection(controller.uiGridPane, leftRowIndex + COLOR_ROW_OFFSET);
         ToggleGroup colorGroupRight = uiColorSelection(controller.uiGridPane, rightRowIndex + COLOR_ROW_OFFSET);
 
+        // Gather all the UI responses and instantiate the DriverInput class.
+        OpModeType opModeType = selectedOpMode.getText().equals("Auto top shoot") ? OpModeType.AUTO : OpModeType.TELEOP;
+        RevolverMotion.SearchOrder searchOrder;
+        EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
+
+        if (opModeType == OpModeType.AUTO) {
+            // Use the default preload autoRevolverTracking
+            searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
+            revolverTracking = autoRevolverTracking;
+        } else { // TeleOp
+            searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
+            revolverTracking = teleopRevolverTracking;
+            String centerSlot = getSelectedRadioButton(slotGroupCenter);
+            String centerColor = getSelectedRadioButton(colorGroupCenter);
+            if (centerSlot != null && centerColor != null)
+                createPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor);
+            else
+                return;
+
+            String leftSlot = getSelectedRadioButton(slotGroupLeft);
+            String leftColor = getSelectedRadioButton(colorGroupLeft);
+            if (leftSlot != null && leftColor != null)
+                createPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor);
+            else
+                return;
+
+            String rightSlot = getSelectedRadioButton(slotGroupRight);
+            String rightColor = getSelectedRadioButton(colorGroupRight);
+            if (rightSlot != null && rightColor != null)
+                createPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor);
+            else
+                return;
+        }
+
+        // From the ComboBox selection for the artifact pattern
+        // create a list of colors.
+        RobotConstantsDecode.ObeliskPattern pattern = RobotConstantsDecode.ObeliskPattern.valueOf(artifactCombo.getSelectionModel().getSelectedItem());
+        List<RobotConstantsDecode.ArtifactColor> patternColors = new ArrayList<>();
+        switch (pattern) {
+            case GREEN_PURPLE_PURPLE -> {
+                patternColors.add(RobotConstantsDecode.ArtifactColor.GREEN);
+                patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
+                patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
+            }
+            case PURPLE_GREEN_PURPLE -> {
+                patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
+                patternColors.add(RobotConstantsDecode.ArtifactColor.GREEN);
+                patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
+            }
+            case PURPLE_PURPLE_GREEN -> {
+                patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
+                patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
+                patternColors.add(RobotConstantsDecode.ArtifactColor.GREEN);
+            }
+        }
+
+        driverInput = new DriverInput(opModeType, searchOrder, revolverTracking, patternColors);
         // Get the final slot and color selections when the driver hits the Play button.
         // Add to the 1st column (index 0) of the 12th row (index 11).
         Button playButton = new Button("Play");
         playButton.setStyle("-fx-font-weight: bold;");
         controller.uiGridPane.add(playButton, 0, 11);
         playButton.setOnAction(e -> {
-
-            // Gather all the UI responses and instantiate the DriverInput class.
-            OpModeType opModeType = OpModeType.valueOf(selectedOpMode.getText());
-            RevolverMotion.SearchOrder searchOrder;
-            EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
-
-            if (opModeType == OpModeType.AUTO) {
-                // Use the default preload autoRevolverTracking
-                searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
-                revolverTracking = autoRevolverTracking;
-            } else { // TeleOp
-                searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
-                revolverTracking = teleopRevolverTracking;
-                String centerSlot = getSelectedRadioButton(slotGroupCenter);
-                String centerColor = getSelectedRadioButton(slotGroupCenter);
-                if (centerSlot != null && centerColor != null)
-                    createPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor);
-                else
-                    return;
-
-                String leftSlot = getSelectedRadioButton(slotGroupLeft);
-                String leftColor = getSelectedRadioButton(slotGroupLeft);
-                if (leftSlot != null && leftColor != null)
-                    createPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor);
-                else
-                    return;
-
-                String rightSlot = getSelectedRadioButton(slotGroupRight);
-                String rightColor = getSelectedRadioButton(slotGroupRight);
-                if (rightSlot != null && rightColor != null)
-                    createPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor);
-                else
-                    return;
-            }
-
-            // From the ComboBox selection for the artifact pattern
-            // create a list of colors.
-            RobotConstantsDecode.ObeliskPattern pattern = RobotConstantsDecode.ObeliskPattern.valueOf(artifactCombo.getSelectionModel().getSelectedItem());
-            List<RobotConstantsDecode.ArtifactColor> patternColors = new ArrayList<>();
-            switch (pattern) {
-                case GREEN_PURPLE_PURPLE -> {
-                    patternColors.add(RobotConstantsDecode.ArtifactColor.GREEN);
-                    patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
-                    patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
-                }
-                case PURPLE_GREEN_PURPLE -> {
-                    patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
-                    patternColors.add(RobotConstantsDecode.ArtifactColor.GREEN);
-                    patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
-                }
-                case PURPLE_PURPLE_GREEN -> {
-                    patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
-                    patternColors.add(RobotConstantsDecode.ArtifactColor.PURPLE);
-                    patternColors.add(RobotConstantsDecode.ArtifactColor.GREEN);
-                }
-            }
-
-            driverInput = new DriverInput(opModeType, searchOrder, revolverTracking, patternColors);
-
             //**TODO For now Close the popup window; in the real application
-            // gray out the Play button and run the simulation.
+            // gray out the Play button and run the simulation. Then re-enable
+            // when done.
             ((Stage) playButton.getScene().getWindow()).close();
         });
 
@@ -232,6 +227,8 @@ public class RevolverAnimation extends Application {
         // bottom center intake for TeleOp).
         initializeRevolverDisplay(driverInput);
 
+        //**TODO All of this need to be put into a method that
+        // will be called in playButton.setOnAction above ...
         // Now show the rapid fire.
         // First rotate the Revolver into the correct shooting
         // position for the pattern entered by the user.
@@ -366,7 +363,7 @@ public class RevolverAnimation extends Application {
             rotationToShootingPosition = 120.0; // rotate 120 degrees CW for the second and third shots
         }
 
-        rapidFire.play(); // rapid fire shows here.
+        rapidFire.play();
 
         pStage.setTitle("FTC Decode: Team 4348 Revolver");
         Scene rootScene = new Scene(root);
