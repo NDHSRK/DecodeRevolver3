@@ -66,7 +66,7 @@ public class RevolverAnimation extends Application {
     private final EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> teleopRevolverTracking = new EnumMap<>(RevolverMotion.RevolverTrackingPosition.class);
 
     //**TODO Need labels for slots. The labels should remain horizontal even
-    // as the revolver rotates.
+    // as the revolver rotates. But avoid clutter; slots are shown in the UI.
 
     @Override
     public void start(final Stage pStage) throws IOException {
@@ -154,39 +154,19 @@ public class RevolverAnimation extends Application {
         RevolverMotion.SearchOrder searchOrder;
         EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
 
+        //**TODO This isn't right - autoRevolverTracking sets a fixed
+        // correlation between positions, slots, and colors - which we
+        // used in the actual game - BUT for the simulator these need
+        // to be configurable. OR stay with the fixed configuration for
+        // Auto but then display but do not allow selection of slots,
+        // colors.
         if (opModeType == OpModeType.AUTO) {
             // Use the default preload autoRevolverTracking
             searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
             revolverTracking = autoRevolverTracking;
         } else { // TeleOp
-            searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
+            searchOrder = RevolverMotion.SearchOrder.ON_TRANSITION;
             revolverTracking = teleopRevolverTracking;
-            String centerSlot = getSelectedRadioButton(slotGroupCenter);
-            String centerColor = getSelectedRadioButton(colorGroupCenter);
-            if (centerSlot != null && centerColor != null)
-                createPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor);
-            else {
-                alertSlotSelectionMissing(UIPositionLabel.CENTER.toString());
-                return; //**TODO don't really want to return; allow driver to select slot(s)
-            }
-
-            String leftSlot = getSelectedRadioButton(slotGroupLeft);
-            String leftColor = getSelectedRadioButton(colorGroupLeft);
-            if (leftSlot != null && leftColor != null)
-                createPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor);
-            else {
-                alertSlotSelectionMissing(UIPositionLabel.LEFT.toString());
-                return; //**TODO don't really want to return; allow driver to select slot(s)
-            }
-
-            String rightSlot = getSelectedRadioButton(slotGroupRight);
-            String rightColor = getSelectedRadioButton(colorGroupRight);
-            if (rightSlot != null && rightColor != null)
-                createPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor);
-            else {
-                alertSlotSelectionMissing(UIPositionLabel.RIGHT.toString());
-                return; //**TODO don't really want to return; allow driver to select slot(s)
-            }
         }
 
         // From the ComboBox selection for the artifact pattern
@@ -219,7 +199,42 @@ public class RevolverAnimation extends Application {
         playButton.setStyle("-fx-font-weight: bold;");
         controller.uiGridPane.add(playButton, 0, 11);
         playButton.setOnAction(e -> {
+            // Don't enable the Play button until all the UI selections have been made.
             playButton.setDisable(true);
+
+            // If the driver hits the Play button but the (TeleOp)
+            // configuration is not complete, put out an alert and return.
+            if (opModeType == OpModeType.TELEOP) {
+                String centerSlot = getSelectedRadioButton(slotGroupCenter);
+                String centerColor = getSelectedRadioButton(colorGroupCenter);
+                if (centerSlot != null && centerColor != null)
+                    createPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor);
+                else {
+                    alertSlotSelectionMissing(UIPositionLabel.CENTER.toString());
+                    playButton.setDisable(false);
+                    return;
+                }
+
+                String leftSlot = getSelectedRadioButton(slotGroupLeft);
+                String leftColor = getSelectedRadioButton(colorGroupLeft);
+                if (leftSlot != null && leftColor != null)
+                    createPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor);
+                else {
+                    alertSlotSelectionMissing(UIPositionLabel.LEFT.toString());
+                    playButton.setDisable(false);
+                    return;
+                }
+
+                String rightSlot = getSelectedRadioButton(slotGroupRight);
+                String rightColor = getSelectedRadioButton(colorGroupRight);
+                if (rightSlot != null && rightColor != null)
+                    createPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor);
+                else {
+                    alertSlotSelectionMissing(UIPositionLabel.RIGHT.toString());
+                    playButton.setDisable(false);
+                    return;
+                }
+            }
 
             // Show the initial orientation (top center shooting for Auto,
             // bottom center intake for TeleOp).
@@ -229,8 +244,8 @@ public class RevolverAnimation extends Application {
 
             //**TODO For now Close the main window; in the real application
             // you may want to support re-configuring and re-running.
-            playButton.setDisable(false);
-            ((Stage) playButton.getScene().getWindow()).close();
+            //playButton.setDisable(false);
+            //((Stage) playButton.getScene().getWindow()).close();
         });
 
         pStage.setTitle("FTC Decode: Team 4348 Revolver");
@@ -286,13 +301,16 @@ public class RevolverAnimation extends Application {
     // For a single RevolverTrackingPosition create a RadioButton for slot selection.
     private ToggleGroup uiSlotSelection(GridPane pRoot, int pUIRowIndex) {
         ToggleGroup slotGroup = new ToggleGroup();
-        RadioButton rbSlot0 = new RadioButton("Slot 0");
+        RadioButton rbSlot0 = new RadioButton("Slot_0");
+        rbSlot0.setMnemonicParsing(false); // show underscore
         rbSlot0.setToggleGroup(slotGroup);
 
-        RadioButton rbSlot1 = new RadioButton("Slot 1");
+        RadioButton rbSlot1 = new RadioButton("Slot_1");
+        rbSlot1.setMnemonicParsing(false); // show underscore
         rbSlot1.setToggleGroup(slotGroup);
 
-        RadioButton rbSlot2 = new RadioButton("Slot 2");
+        RadioButton rbSlot2 = new RadioButton("Slot_2");
+        rbSlot2.setMnemonicParsing(false); // show underscore
         rbSlot2.setToggleGroup(slotGroup);
 
         // Layout side-by-side.
@@ -424,8 +442,11 @@ public class RevolverAnimation extends Application {
 
     private void createPostIntakeTracking(String pUIPositionLabel, String pSlot, String pColor) {
         RevolverMotion.RevolverTrackingPosition position = RevolverMotion.RevolverTrackingPosition.valueOf(POSITION_PREFIX + pUIPositionLabel);
-        RevolverServo.RevolverSlot slot = RevolverServo.RevolverSlot.valueOf(pSlot);
-        RobotConstantsDecode.ArtifactColor color = RobotConstantsDecode.ArtifactColor.valueOf(pColor);
+        RevolverServo.RevolverSlot slot = RevolverServo.RevolverSlot.valueOf(pSlot.toUpperCase());
+        String enumColor = pColor.toUpperCase();
+        RobotConstantsDecode.ArtifactColor color =
+                enumColor.equals("EMPTY") ? RobotConstantsDecode.ArtifactColor.NPOS :
+                        RobotConstantsDecode.ArtifactColor.valueOf(pColor.toUpperCase());
 
         teleopRevolverTracking.put(position, new RevolverMotion.RevolverSlotInfo(color, slot));
         RobotLogCommon.d(TAG, "Revolver contents: position " + position + ", slot " + pSlot + ", color " + pColor);

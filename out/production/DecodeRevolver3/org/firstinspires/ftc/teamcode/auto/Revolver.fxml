@@ -13,7 +13,7 @@
 
 <?import javafx.scene.Group?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-            prefHeight="600.0" prefWidth="950.0" style="-fx-background-color: #DCDCDC;"
+            prefHeight="600.0" prefWidth="1000.0" style="-fx-background-color: #DCDCDC;"
             xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.firstinspires.ftc.teamcode.auto.RevolverController">
@@ -41,7 +41,7 @@
       </Pane>
    </center>
    <right>
-      <GridPane fx:id="uiGridPane" prefHeight="600.0" prefWidth="350.0" maxHeight="-Infinity"
+      <GridPane fx:id="uiGridPane" prefHeight="600.0" prefWidth="400.0" maxHeight="-Infinity"
                 maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
                 style="-fx-background-color: #DCDCDC;" vgap="10">
          <padding>
