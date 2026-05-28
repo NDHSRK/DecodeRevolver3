@@ -16,6 +16,8 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -209,7 +211,9 @@ public class RevolverAnimation extends Application {
         // Get the final slot and color selections when the driver hits the Play button.
         // Add to the 1st column (index 0) of the 12th row (index 11).
         Button playButton = new Button("Play");
-        playButton.setStyle("-fx-font-weight: bold;");
+
+        playButton.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        GridPane.setMargin(playButton, new Insets(20, 0, 0, 0)); // top, right, bottom, left
         controller.uiGridPane.add(playButton, 0, 11);
         playButton.setOnAction(e -> {
             // Don't enable the Play button until all the UI selections have been made.
@@ -316,18 +320,22 @@ public class RevolverAnimation extends Application {
         ToggleGroup slotGroup = new ToggleGroup();
         RadioButton rbSlot0 = new RadioButton(RevolverServo.RevolverSlot.SLOT_0.toString());
         rbSlot0.setMnemonicParsing(false); // show underscore
+        rbSlot0.setFont(Font.font("Arial", 14));
         rbSlot0.setToggleGroup(slotGroup);
 
         RadioButton rbSlot1 = new RadioButton(RevolverServo.RevolverSlot.SLOT_1.toString());
         rbSlot1.setMnemonicParsing(false); // show underscore
+        rbSlot1.setFont(Font.font("Arial", 14));
         rbSlot1.setToggleGroup(slotGroup);
 
         RadioButton rbSlot2 = new RadioButton(RevolverServo.RevolverSlot.SLOT_2.toString());
         rbSlot2.setMnemonicParsing(false); // show underscore
+        rbSlot2.setFont(Font.font("Arial", 14));
         rbSlot2.setToggleGroup(slotGroup);
 
         // Layout side-by-side.
         HBox hboxSlots = new HBox(15); // 15px spacing
+        //HBox.setMargin(hboxSlots, new Insets(10, 0, 0, 0));
         hboxSlots.setPadding(new Insets(0, 0, 0, 20)); // top, right, bottom, left
         hboxSlots.getChildren().addAll(rbSlot0, rbSlot1, rbSlot2);
 
@@ -344,24 +352,29 @@ public class RevolverAnimation extends Application {
         ToggleGroup colorGroup = new ToggleGroup();
         RadioButton rbGreen = new RadioButton("Green");
         // Style the text/radio color
-        rbGreen.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+        rbGreen.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        rbGreen.setStyle("-fx-text-fill: green;");
         rbGreen.setToggleGroup(colorGroup);
 
         RadioButton rbPurple = new RadioButton("Purple");
-        rbPurple.setStyle("-fx-text-fill: purple; -fx-font-weight: bold;");
+        rbPurple.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        rbPurple.setStyle("-fx-text-fill: purple");
         rbPurple.setToggleGroup(colorGroup);
 
         RadioButton rbUnknown = new RadioButton("Unknown");
-        rbUnknown.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+        rbUnknown.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        rbUnknown.setStyle("-fx-text-fill: red;");
         rbUnknown.setToggleGroup(colorGroup);
 
         RadioButton rbEmpty = new RadioButton("Empty");
-        rbEmpty.setStyle("-fx-text-fill: black; -fx-font-weight: bold;");
+        rbEmpty.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        rbEmpty.setStyle("-fx-text-fill: black;");
         rbEmpty.setToggleGroup(colorGroup);
         rbEmpty.setSelected(true);
 
         // Layout side-by-side
         HBox hboxColors = new HBox(15); // 15px spacing
+        //HBox.setMargin(hboxColors, new Insets(10, 0, 0, 0));
         hboxColors.setPadding(new Insets(0, 0, 0, 20)); // top, right, bottom, left
         hboxColors.getChildren().addAll(rbGreen, rbPurple, rbUnknown, rbEmpty);
 

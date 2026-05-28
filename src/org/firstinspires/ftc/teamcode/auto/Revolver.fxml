@@ -35,7 +35,7 @@
                <Font size="16.0" />
             </font>
          </Label>
-         <Label fx:id="opModeLabel" prefHeight="26.0" prefWidth="196.0" text="Revolver Configuration for " GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+         <Label fx:id="opModeLabel" maxWidth="1.7976931348623157E308" prefHeight="26.0" prefWidth="196.0" text="Revolver Configuration for " GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
             <GridPane.margin>
                <Insets top="30.0" />
             </GridPane.margin>
@@ -43,23 +43,29 @@
                <Font size="16.0" />
             </font>
          </Label>
-         <Label fx:id="rowOneLabel" text="CENTER (default = Auto)" GridPane.rowIndex="2">
+         <Label fx:id="rowOneLabel" maxHeight="1.7976931348623157E308" text="CENTER (default = Auto)" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS">
             <font>
                <Font name="System Bold" size="16.0" />
             </font>
             <GridPane.margin>
-               <Insets top="30.0" />
+               <Insets top="40.0" />
             </GridPane.margin>
          </Label>
          <Label fx:id="rowTwoLabel" prefHeight="26.0" prefWidth="167.0" text="LEFT (default = Auto)" GridPane.rowIndex="5">
             <font>
                <Font name="System Bold" size="16.0" />
             </font>
+            <GridPane.margin>
+               <Insets />
+            </GridPane.margin>
          </Label>
          <Label fx:id="rowThreeLabel" text="RIGHT (default = Auto)" GridPane.rowIndex="8">
             <font>
                <Font name="System Bold" size="16.0" />
             </font>
+            <GridPane.margin>
+               <Insets />
+            </GridPane.margin>
          </Label>
          <columnConstraints>
             <ColumnConstraints />
