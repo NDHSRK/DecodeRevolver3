@@ -133,37 +133,47 @@ public class RevolverAnimation extends Application {
             controller.rowThreeLabel.setText(UIPositionLabel.CENTER.toString());
         }
 
+        //**TODO make RevolverMotion.RevolverTrackingPosition a parameter
+        // and set the default RadioButton selection to the Auto setup.
+        //**TODO Same for color ...
         // For each RevolverTrackingPosition create RadioButtons for the slots
         // and for color selection.
-        ToggleGroup slotGroupCenter = uiSlotSelection(controller.uiGridPane, centerRowIndex + SLOT_ROW_OFFSET);
-        ToggleGroup slotGroupLeft = uiSlotSelection(controller.uiGridPane, leftRowIndex + SLOT_ROW_OFFSET);
-        ToggleGroup slotGroupRight = uiSlotSelection(controller.uiGridPane, rightRowIndex + SLOT_ROW_OFFSET);
+        Pair<ToggleGroup, HBox> slotGroupCenter = uiSlotSelection(controller.uiGridPane, centerRowIndex + SLOT_ROW_OFFSET);
+        Pair<ToggleGroup, HBox> slotGroupLeft = uiSlotSelection(controller.uiGridPane, leftRowIndex + SLOT_ROW_OFFSET);
+        Pair<ToggleGroup, HBox> slotGroupRight = uiSlotSelection(controller.uiGridPane, rightRowIndex + SLOT_ROW_OFFSET);
 
         // Set listeners.
-        setSlotListener(slotGroupCenter, slotGroupLeft, slotGroupRight);
-        setSlotListener(slotGroupLeft, slotGroupCenter, slotGroupRight);
-        setSlotListener(slotGroupRight, slotGroupCenter, slotGroupLeft);
+        setSlotListener(slotGroupCenter.first, slotGroupLeft.first, slotGroupRight.first);
+        setSlotListener(slotGroupLeft.first, slotGroupCenter.first, slotGroupRight.first);
+        setSlotListener(slotGroupRight.first, slotGroupCenter.first, slotGroupLeft.first);
 
         // Color Selection.
-        ToggleGroup colorGroupCenter = uiColorSelection(controller.uiGridPane, centerRowIndex + COLOR_ROW_OFFSET);
-        ToggleGroup colorGroupLeft = uiColorSelection(controller.uiGridPane, leftRowIndex + COLOR_ROW_OFFSET);
-        ToggleGroup colorGroupRight = uiColorSelection(controller.uiGridPane, rightRowIndex + COLOR_ROW_OFFSET);
+        Pair<ToggleGroup, HBox> colorGroupCenter = uiColorSelection(controller.uiGridPane, centerRowIndex + COLOR_ROW_OFFSET);
+        Pair<ToggleGroup, HBox> colorGroupLeft = uiColorSelection(controller.uiGridPane, leftRowIndex + COLOR_ROW_OFFSET);
+        Pair<ToggleGroup, HBox> colorGroupRight = uiColorSelection(controller.uiGridPane, rightRowIndex + COLOR_ROW_OFFSET);
 
         // Gather all the UI responses and instantiate the DriverInput class.
         OpModeType opModeType = selectedOpMode.getText().equals("Auto top shoot") ? OpModeType.AUTO : OpModeType.TELEOP;
         RevolverMotion.SearchOrder searchOrder;
         EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
 
-        //**TODO This isn't right - autoRevolverTracking sets a fixed
-        // correlation between positions, slots, and colors - which we
-        // used in the actual game - BUT for the simulator these need
-        // to be configurable. OR stay with the fixed configuration for
-        // Auto but then display but do not allow selection of slots,
-        // colors.
+        // Configure the UI.
         if (opModeType == OpModeType.AUTO) {
             // Use the default preload autoRevolverTracking
             searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
             revolverTracking = autoRevolverTracking;
+
+            // Since slot and color selections are fixed in our
+            // standard setup for the Decode game, disable their
+            // HBox containers.
+            //slotGroupCenter.selectToggle(option1);
+            slotGroupCenter.second.setDisable(true);
+            slotGroupLeft.second.setDisable(true);
+            slotGroupRight.second.setDisable(true);
+
+            colorGroupCenter.second.setDisable(true);
+            colorGroupLeft.second.setDisable(true);
+            colorGroupRight.second.setDisable(true);
         } else { // TeleOp
             searchOrder = RevolverMotion.SearchOrder.ON_TRANSITION;
             revolverTracking = teleopRevolverTracking;
@@ -205,8 +215,8 @@ public class RevolverAnimation extends Application {
             // If the driver hits the Play button but the (TeleOp)
             // configuration is not complete, put out an alert and return.
             if (opModeType == OpModeType.TELEOP) {
-                String centerSlot = getSelectedRadioButton(slotGroupCenter);
-                String centerColor = getSelectedRadioButton(colorGroupCenter);
+                String centerSlot = getSelectedRadioButton(slotGroupCenter.first);
+                String centerColor = getSelectedRadioButton(colorGroupCenter.first);
                 if (centerSlot != null && centerColor != null)
                     createPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor);
                 else {
@@ -215,8 +225,8 @@ public class RevolverAnimation extends Application {
                     return;
                 }
 
-                String leftSlot = getSelectedRadioButton(slotGroupLeft);
-                String leftColor = getSelectedRadioButton(colorGroupLeft);
+                String leftSlot = getSelectedRadioButton(slotGroupLeft.first);
+                String leftColor = getSelectedRadioButton(colorGroupLeft.first);
                 if (leftSlot != null && leftColor != null)
                     createPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor);
                 else {
@@ -225,8 +235,8 @@ public class RevolverAnimation extends Application {
                     return;
                 }
 
-                String rightSlot = getSelectedRadioButton(slotGroupRight);
-                String rightColor = getSelectedRadioButton(colorGroupRight);
+                String rightSlot = getSelectedRadioButton(slotGroupRight.first);
+                String rightColor = getSelectedRadioButton(colorGroupRight.first);
                 if (rightSlot != null && rightColor != null)
                     createPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor);
                 else {
@@ -299,17 +309,17 @@ public class RevolverAnimation extends Application {
     }
 
     // For a single RevolverTrackingPosition create a RadioButton for slot selection.
-    private ToggleGroup uiSlotSelection(GridPane pRoot, int pUIRowIndex) {
+    private Pair<ToggleGroup, HBox> uiSlotSelection(GridPane pRoot, int pUIRowIndex) {
         ToggleGroup slotGroup = new ToggleGroup();
-        RadioButton rbSlot0 = new RadioButton("Slot_0");
+        RadioButton rbSlot0 = new RadioButton(RevolverServo.RevolverSlot.SLOT_0.toString());
         rbSlot0.setMnemonicParsing(false); // show underscore
         rbSlot0.setToggleGroup(slotGroup);
 
-        RadioButton rbSlot1 = new RadioButton("Slot_1");
+        RadioButton rbSlot1 = new RadioButton(RevolverServo.RevolverSlot.SLOT_1.toString());
         rbSlot1.setMnemonicParsing(false); // show underscore
         rbSlot1.setToggleGroup(slotGroup);
 
-        RadioButton rbSlot2 = new RadioButton("Slot_2");
+        RadioButton rbSlot2 = new RadioButton(RevolverServo.RevolverSlot.SLOT_2.toString());
         rbSlot2.setMnemonicParsing(false); // show underscore
         rbSlot2.setToggleGroup(slotGroup);
 
@@ -322,10 +332,10 @@ public class RevolverAnimation extends Application {
         // gridPane.add(child, columnIndex, rowIndex, columnSpan, rowSpan);
         pRoot.add(hboxSlots, 0, pUIRowIndex, GridPane.REMAINING, 1);
 
-        return slotGroup;
+        return Pair.create(slotGroup, hboxSlots);
     }
 
-    private ToggleGroup uiColorSelection(GridPane pRoot, int pUIRowIndex) {
+    private Pair<ToggleGroup, HBox> uiColorSelection(GridPane pRoot, int pUIRowIndex) {
 
         // Create RadioButtons for artifact color selection.
         ToggleGroup colorGroup = new ToggleGroup();
@@ -356,7 +366,7 @@ public class RevolverAnimation extends Application {
         // gridPane.add(child, columnIndex, rowIndex, columnSpan, rowSpan);
         pRoot.add(hboxColors, 0, pUIRowIndex, GridPane.REMAINING, 1);
 
-        return colorGroup;
+        return Pair.create(colorGroup, hboxColors);
     }
 
     // Add a ChangeListener to the ToggleGroup of a set of 3 slots for a single RevolverTrackingPosition
