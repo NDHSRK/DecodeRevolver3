@@ -117,7 +117,9 @@ public class RevolverAnimation extends Application {
         int centerRowIndex;
         int leftRowIndex;
         int rightRowIndex;
+        String opModeLabel = controller.opModeLabel.getText();
         if (selectedOpMode.getText().equals("Auto top shoot")) {
+            controller.opModeLabel.setText(opModeLabel + "Auto");
             centerRowIndex = 2;
             controller.rowOneLabel.setText(UIPositionLabel.CENTER.toString());
             leftRowIndex = 5;
@@ -125,6 +127,7 @@ public class RevolverAnimation extends Application {
             rightRowIndex = 8;
             controller.rowThreeLabel.setText(UIPositionLabel.RIGHT.toString());
         } else { // must be TeleOp
+            controller.opModeLabel.setText(opModeLabel + "TeleOp");
             leftRowIndex = 2;
             controller.rowOneLabel.setText(UIPositionLabel.LEFT.toString());
             rightRowIndex = 5;

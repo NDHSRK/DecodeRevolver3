@@ -29,6 +29,7 @@ public class RevolverController {
 
     @FXML
     GridPane uiGridPane;  // on the right-hand side of the BorderPane
+    @FXML Label opModeLabel;
     @FXML
     public Label rowOneLabel;
     @FXML
