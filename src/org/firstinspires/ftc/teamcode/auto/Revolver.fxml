@@ -23,6 +23,9 @@
             <Circle fx:id="bottom_right" centerX="438.0" centerY="380.0" radius="100.0" visible="false" />
             <Circle fx:id="bottom_center" centerX="300.0" centerY="450.0" radius="100.0" visible="false" />
          </Group>
+         <BorderPane.margin>
+            <Insets />
+         </BorderPane.margin>
       </Pane>
    </center>
    <right>
@@ -30,28 +33,25 @@
          <padding>
             <Insets bottom="10.0" left="10.0" top="20.0" />
          </padding>
-         <Label alignment="CENTER_LEFT" contentDisplay="CENTER" prefHeight="27.0" text="Artifact pattern" textAlignment="CENTER" GridPane.columnSpan="2147483647" GridPane.halignment="LEFT">
-            <font>
-               <Font size="16.0" />
-            </font>
-         </Label>
-         <Label fx:id="opModeLabel" maxWidth="1.7976931348623157E308" prefHeight="26.0" prefWidth="196.0" text="Revolver Configuration for " GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+         <HBox fx:id="patternHBox" GridPane.columnSpan="2147483647" GridPane.rowIndex="0">
             <GridPane.margin>
-               <Insets top="30.0" />
+               <Insets />
+            </GridPane.margin>
+            <Label prefHeight="27.0" text="Artifact pattern" GridPane.columnSpan="2147483647">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+         </HBox>
+         <Label fx:id="opModeLabel" prefHeight="26.0" prefWidth="196.0" text="Revolver Configuration for " GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+            <GridPane.margin>
+               <Insets />
             </GridPane.margin>
             <font>
                <Font size="16.0" />
             </font>
          </Label>
-         <Label fx:id="rowOneLabel" maxHeight="1.7976931348623157E308" text="CENTER (default = Auto)" GridPane.rowIndex="2" GridPane.vgrow="ALWAYS">
-            <font>
-               <Font name="System Bold" size="16.0" />
-            </font>
-            <GridPane.margin>
-               <Insets top="40.0" />
-            </GridPane.margin>
-         </Label>
-         <Label fx:id="rowTwoLabel" prefHeight="26.0" prefWidth="167.0" text="LEFT (default = Auto)" GridPane.rowIndex="5">
+         <Label fx:id="firstPositionLabel" text="CENTER (default = Auto)" GridPane.rowIndex="2">
             <font>
                <Font name="System Bold" size="16.0" />
             </font>
@@ -59,7 +59,17 @@
                <Insets />
             </GridPane.margin>
          </Label>
-         <Label fx:id="rowThreeLabel" text="RIGHT (default = Auto)" GridPane.rowIndex="8">
+         <HBox fx:id="firstSlotHBox" GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+            <GridPane.margin>
+               <Insets />
+            </GridPane.margin>
+         </HBox>
+         <HBox fx:id="firstColorHBox" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
+            <GridPane.margin>
+               <Insets />
+            </GridPane.margin>
+         </HBox>
+         <Label fx:id="secondPositionLabel" text="LEFT (default = Auto)" GridPane.rowIndex="5">
             <font>
                <Font name="System Bold" size="16.0" />
             </font>
@@ -67,13 +77,56 @@
                <Insets />
             </GridPane.margin>
          </Label>
+         <HBox fx:id="secondSlotHBox" GridPane.columnSpan="2147483647" GridPane.rowIndex="6">
+            <GridPane.margin>
+               <Insets />
+            </GridPane.margin>
+         </HBox>
+         <HBox fx:id="secondColorHBox" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
+            <GridPane.margin>
+               <Insets />
+            </GridPane.margin>
+         </HBox>
+         <Label fx:id="thirdPositionLabel" text="RIGHT (default = Auto)" GridPane.rowIndex="8">
+            <font>
+               <Font name="System Bold" size="16.0" />
+            </font>
+            <GridPane.margin>
+               <Insets />
+            </GridPane.margin>
+         </Label>
+         <HBox fx:id="thirdSlotHBox" GridPane.columnSpan="2147483647" GridPane.rowIndex="9">
+            <GridPane.margin>
+               <Insets />
+            </GridPane.margin>
+         </HBox>
+         <HBox fx:id="thirdColorHBox" GridPane.columnSpan="2147483647" GridPane.rowIndex="10">
+            <GridPane.margin>
+               <Insets />
+            </GridPane.margin>
+         </HBox>
+         <HBox fx:id="playResetHBox" spacing="20" GridPane.columnSpan="2147483647" GridPane.rowIndex="11">
+            <GridPane.margin>
+               <Insets top="20.0" />
+            </GridPane.margin>
+            <Button fx:id="playButton" mnemonicParsing="false" text="Play">
+               <font>
+                  <Font name="Arial Bold" size="16.0" />
+               </font>
+            </Button>
+            <Button fx:id="resetTeleOpUIButton" mnemonicParsing="false" text="Reset TeleOp UI">
+               <font>
+                  <Font name="Arial" size="16.0" />
+               </font>
+            </Button>
+         </HBox>
          <columnConstraints>
             <ColumnConstraints />
          </columnConstraints>
          <rowConstraints>
             <RowConstraints />
-            <RowConstraints maxHeight="0.0" minHeight="0.0" prefHeight="0.0" />
-            <RowConstraints maxHeight="25.599999999999994" minHeight="25.599999999999994" prefHeight="25.599999999999994" />
+            <RowConstraints />
+            <RowConstraints />
             <RowConstraints />
             <RowConstraints />
             <RowConstraints />

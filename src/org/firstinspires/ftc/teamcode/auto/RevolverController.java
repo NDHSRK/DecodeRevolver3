@@ -2,16 +2,17 @@ package org.firstinspires.ftc.teamcode.auto;
 
 import javafx.fxml.FXML;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
 
 public class RevolverController {
 
     @FXML
-    public Pane revolverPane; // on the left-hand side of the BorderPane
+    public Pane revolverPane;
     @FXML
     public Group revolver;
     @FXML
@@ -28,12 +29,32 @@ public class RevolverController {
     public Circle bottom_center;
 
     @FXML
-    GridPane uiGridPane;  // on the right-hand side of the BorderPane
-    @FXML Label opModeLabel;
+    public GridPane uiGridPane;  // on the right-hand side of the BorderPane
     @FXML
-    public Label rowOneLabel;
+    public HBox patternHBox;
     @FXML
-    public Label rowTwoLabel;
+    public Label opModeLabel;
     @FXML
-    public Label rowThreeLabel;
+    public Label firstPositionLabel;
+    @FXML
+    public HBox firstSlotHBox;
+    @FXML
+    public HBox firstColorHBox;
+    @FXML
+    public Label secondPositionLabel;
+    public HBox secondSlotHBox;
+    @FXML
+    public HBox secondColorHBox;
+    @FXML
+    public Label thirdPositionLabel;
+    public HBox thirdSlotHBox;
+    @FXML
+    public HBox thirdColorHBox;
+
+    @FXML
+    public HBox playResetHBox;
+    @FXML
+    public Button playButton;
+    @FXML
+    public Button resetTeleOpUIButton;
 }

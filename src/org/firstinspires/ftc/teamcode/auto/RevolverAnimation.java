@@ -56,9 +56,9 @@ public class RevolverAnimation extends Application {
 
     private DriverInput driverInput;
 
-    // Starting contents of the revolver after the pre-loads have been placed.
-    // The representation of the revolver is from the point of view of an observer
-    // standing behind the robot.
+    // In Auto, these are the starting contents of the revolver after the pre-loads
+    // have been placed. The representation of the revolver is from the point of view
+    // of an observer standing behind the robot.
     private final EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> autoRevolverTracking = new EnumMap<>(Map.of(
             RevolverMotion.RevolverTrackingPosition.REAR_VIEW_LEFT, new RevolverMotion.RevolverSlotInfo(RobotConstantsDecode.ArtifactColor.PURPLE, RevolverServo.RevolverSlot.SLOT_2),
             RevolverMotion.RevolverTrackingPosition.REAR_VIEW_CENTER, new RevolverMotion.RevolverSlotInfo(RobotConstantsDecode.ArtifactColor.GREEN, RevolverServo.RevolverSlot.SLOT_0),
@@ -112,50 +112,56 @@ public class RevolverAnimation extends Application {
         // 3. Set PURPLE_GREEN_PURPLE as the default
         artifactCombo.setValue(RobotConstantsDecode.ObeliskPattern.PURPLE_GREEN_PURPLE.toString());
 
-        // Add to the GridPane at the correct row index for the selected OpMode.
-        // gridPane.add(child, columnIndex, rowIndex, columnSpan, rowSpan);
-        controller.uiGridPane.add(artifactCombo, 1, 0, GridPane.REMAINING, 1); // column 1, row 0
+        // To get the correct spacing between the label "Artifact pattern"
+        // and the ComboBox with the patterns I had to put both into an
+        // HBox.
+        controller.patternHBox.setSpacing(10);
+        controller.patternHBox.getChildren().add(artifactCombo);
 
-        int centerRowIndex;
-        int leftRowIndex;
-        int rightRowIndex;
+        Pair<ToggleGroup, HBox> slotGroupCenter;
+        Pair<ToggleGroup, HBox> slotGroupLeft;
+        Pair<ToggleGroup, HBox> slotGroupRight;
+
+        Pair<ToggleGroup, HBox> colorGroupCenter;
+        Pair<ToggleGroup, HBox> colorGroupLeft;
+        Pair<ToggleGroup, HBox> colorGroupRight;
+
         String opModeLabel = controller.opModeLabel.getText();
         if (selectedOpMode.getText().equals("Auto top shoot")) {
-            controller.opModeLabel.setText(opModeLabel + "Auto");
-            centerRowIndex = 2;
-            controller.rowOneLabel.setText(UIPositionLabel.CENTER.toString());
-            leftRowIndex = 5;
-            controller.rowTwoLabel.setText(UIPositionLabel.LEFT.toString());
-            rightRowIndex = 8;
-            controller.rowThreeLabel.setText(UIPositionLabel.RIGHT.toString());
-        } else { // must be TeleOp
-            controller.opModeLabel.setText(opModeLabel + "TeleOp");
-            leftRowIndex = 2;
-            controller.rowOneLabel.setText(UIPositionLabel.LEFT.toString());
-            rightRowIndex = 5;
-            controller.rowTwoLabel.setText(UIPositionLabel.RIGHT.toString());
-            centerRowIndex = 8;
-            controller.rowThreeLabel.setText(UIPositionLabel.CENTER.toString());
-        }
+            controller.firstPositionLabel.setText(UIPositionLabel.CENTER.toString());
+            controller.secondPositionLabel.setText(UIPositionLabel.LEFT.toString());
+            controller.thirdPositionLabel.setText(UIPositionLabel.RIGHT.toString());
 
-        //**TODO make RevolverMotion.RevolverTrackingPosition a parameter
-        // and set the default RadioButton selection to the Auto setup.
-        //**TODO Same for color ...
-        // For each RevolverTrackingPosition create RadioButtons for the slots
-        // and for color selection.
-        Pair<ToggleGroup, HBox> slotGroupCenter = uiSlotSelection(controller.uiGridPane, centerRowIndex + SLOT_ROW_OFFSET);
-        Pair<ToggleGroup, HBox> slotGroupLeft = uiSlotSelection(controller.uiGridPane, leftRowIndex + SLOT_ROW_OFFSET);
-        Pair<ToggleGroup, HBox> slotGroupRight = uiSlotSelection(controller.uiGridPane, rightRowIndex + SLOT_ROW_OFFSET);
+            // Slot selection.
+            slotGroupCenter = Pair.create(uiSlotSelection(controller.firstSlotHBox), controller.firstSlotHBox);
+            slotGroupLeft =  Pair.create(uiSlotSelection(controller.secondSlotHBox), controller.secondSlotHBox);
+            slotGroupRight =  Pair.create(uiSlotSelection(controller.thirdSlotHBox), controller.thirdSlotHBox);
+
+            // Color Selection.
+            colorGroupCenter =  Pair.create(uiColorSelection(controller.firstColorHBox), controller.firstColorHBox);
+            colorGroupLeft =  Pair.create(uiColorSelection(controller.secondColorHBox), controller.secondColorHBox);
+            colorGroupRight =  Pair.create(uiColorSelection(controller.thirdColorHBox), controller.thirdColorHBox);
+
+        } else { // must be TeleOp
+            controller.firstPositionLabel.setText(UIPositionLabel.LEFT.toString());
+            controller.secondPositionLabel.setText(UIPositionLabel.RIGHT.toString());
+            controller.thirdPositionLabel.setText(UIPositionLabel.CENTER.toString());
+
+            // Slot selection.
+            slotGroupLeft =  Pair.create(uiSlotSelection(controller.firstSlotHBox), controller.firstSlotHBox);
+            slotGroupRight =  Pair.create(uiSlotSelection(controller.secondSlotHBox), controller.secondSlotHBox);
+            slotGroupCenter =  Pair.create(uiSlotSelection(controller.thirdSlotHBox), controller.thirdSlotHBox);
+
+            // Color Selection.
+            colorGroupLeft =  Pair.create(uiColorSelection(controller.firstColorHBox), controller.firstColorHBox);
+            colorGroupRight =  Pair.create(uiColorSelection(controller.secondColorHBox), controller.secondColorHBox);
+            colorGroupCenter =  Pair.create(uiColorSelection(controller.thirdColorHBox), controller.thirdColorHBox);
+        }
 
         // Set listeners.
         setSlotListener(slotGroupCenter.first, slotGroupLeft.first, slotGroupRight.first);
         setSlotListener(slotGroupLeft.first, slotGroupCenter.first, slotGroupRight.first);
         setSlotListener(slotGroupRight.first, slotGroupCenter.first, slotGroupLeft.first);
-
-        // Color Selection.
-        Pair<ToggleGroup, HBox> colorGroupCenter = uiColorSelection(controller.uiGridPane, centerRowIndex + COLOR_ROW_OFFSET);
-        Pair<ToggleGroup, HBox> colorGroupLeft = uiColorSelection(controller.uiGridPane, leftRowIndex + COLOR_ROW_OFFSET);
-        Pair<ToggleGroup, HBox> colorGroupRight = uiColorSelection(controller.uiGridPane, rightRowIndex + COLOR_ROW_OFFSET);
 
         // Gather all the UI responses and instantiate the DriverInput class.
         OpModeType opModeType = selectedOpMode.getText().equals("Auto top shoot") ? OpModeType.AUTO : OpModeType.TELEOP;
@@ -171,7 +177,6 @@ public class RevolverAnimation extends Application {
             // Since slot and color selections are fixed in our
             // standard setup for the Decode game, disable their
             // HBox containers.
-            //slotGroupCenter.selectToggle(option1);
             slotGroupCenter.second.setDisable(true);
             slotGroupLeft.second.setDisable(true);
             slotGroupRight.second.setDisable(true);
@@ -209,15 +214,9 @@ public class RevolverAnimation extends Application {
         driverInput = new DriverInput(opModeType, searchOrder, revolverTracking, patternColors);
 
         // Get the final slot and color selections when the driver hits the Play button.
-        // Add to the 1st column (index 0) of the 12th row (index 11).
-        Button playButton = new Button("Play");
-
-        playButton.setFont(Font.font("Arial", FontWeight.BOLD, 16));
-        GridPane.setMargin(playButton, new Insets(20, 0, 0, 0)); // top, right, bottom, left
-        controller.uiGridPane.add(playButton, 0, 11);
-        playButton.setOnAction(e -> {
+        controller.playButton.setOnAction(e -> {
             // Don't enable the Play button until all the UI selections have been made.
-            playButton.setDisable(true);
+            controller.playButton.setDisable(true);
 
             // If the driver hits the Play button but the (TeleOp)
             // configuration is not complete, put out an alert and return.
@@ -228,7 +227,7 @@ public class RevolverAnimation extends Application {
                     createPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor);
                 else {
                     alertSlotSelectionMissing(UIPositionLabel.CENTER.toString());
-                    playButton.setDisable(false);
+                    controller.playButton.setDisable(false);
                     return;
                 }
 
@@ -238,7 +237,7 @@ public class RevolverAnimation extends Application {
                     createPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor);
                 else {
                     alertSlotSelectionMissing(UIPositionLabel.LEFT.toString());
-                    playButton.setDisable(false);
+                    controller.playButton.setDisable(false);
                     return;
                 }
 
@@ -248,7 +247,7 @@ public class RevolverAnimation extends Application {
                     createPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor);
                 else {
                     alertSlotSelectionMissing(UIPositionLabel.RIGHT.toString());
-                    playButton.setDisable(false);
+                    controller.playButton.setDisable(false);
                     return;
                 }
             }
@@ -316,7 +315,7 @@ public class RevolverAnimation extends Application {
     }
 
     // For a single RevolverTrackingPosition create a RadioButton for slot selection.
-    private Pair<ToggleGroup, HBox> uiSlotSelection(GridPane pRoot, int pUIRowIndex) {
+    private ToggleGroup uiSlotSelection(HBox pRowGridBox) {
         ToggleGroup slotGroup = new ToggleGroup();
         RadioButton rbSlot0 = new RadioButton(RevolverServo.RevolverSlot.SLOT_0.toString());
         rbSlot0.setMnemonicParsing(false); // show underscore
@@ -334,19 +333,14 @@ public class RevolverAnimation extends Application {
         rbSlot2.setToggleGroup(slotGroup);
 
         // Layout side-by-side.
-        HBox hboxSlots = new HBox(15); // 15px spacing
-        //HBox.setMargin(hboxSlots, new Insets(10, 0, 0, 0));
-        hboxSlots.setPadding(new Insets(0, 0, 0, 20)); // top, right, bottom, left
-        hboxSlots.getChildren().addAll(rbSlot0, rbSlot1, rbSlot2);
+        pRowGridBox.setSpacing(15);
+        pRowGridBox.setPadding(new Insets(0, 0, 0, 20)); // top, right, bottom, left
+        pRowGridBox.getChildren().addAll(rbSlot0, rbSlot1, rbSlot2);
 
-        // Add to the GridPane at the correct row index for the selected OpMode.
-        // gridPane.add(child, columnIndex, rowIndex, columnSpan, rowSpan);
-        pRoot.add(hboxSlots, 0, pUIRowIndex, GridPane.REMAINING, 1);
-
-        return Pair.create(slotGroup, hboxSlots);
+        return slotGroup;
     }
 
-    private Pair<ToggleGroup, HBox> uiColorSelection(GridPane pRoot, int pUIRowIndex) {
+    private ToggleGroup uiColorSelection(HBox pColorGridBox) {
 
         // Create RadioButtons for artifact color selection.
         ToggleGroup colorGroup = new ToggleGroup();
@@ -358,7 +352,7 @@ public class RevolverAnimation extends Application {
 
         RadioButton rbPurple = new RadioButton("Purple");
         rbPurple.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-        rbPurple.setStyle("-fx-text-fill: purple");
+        rbPurple.setStyle("-fx-text-fill: purple;");
         rbPurple.setToggleGroup(colorGroup);
 
         RadioButton rbUnknown = new RadioButton("Unknown");
@@ -373,16 +367,11 @@ public class RevolverAnimation extends Application {
         rbEmpty.setSelected(true);
 
         // Layout side-by-side
-        HBox hboxColors = new HBox(15); // 15px spacing
-        //HBox.setMargin(hboxColors, new Insets(10, 0, 0, 0));
-        hboxColors.setPadding(new Insets(0, 0, 0, 20)); // top, right, bottom, left
-        hboxColors.getChildren().addAll(rbGreen, rbPurple, rbUnknown, rbEmpty);
+        pColorGridBox.setSpacing(15);
+        pColorGridBox.setPadding(new Insets(0, 0, 0, 20)); // top, right, bottom, left
+        pColorGridBox.getChildren().addAll(rbGreen, rbPurple, rbUnknown, rbEmpty);
 
-        // Add to the GridPane at the correct row index for the selected OpMode.
-        // gridPane.add(child, columnIndex, rowIndex, columnSpan, rowSpan);
-        pRoot.add(hboxColors, 0, pUIRowIndex, GridPane.REMAINING, 1);
-
-        return Pair.create(colorGroup, hboxColors);
+        return colorGroup;
     }
 
     // Add a ChangeListener to the ToggleGroup of a set of 3 slots for a single RevolverTrackingPosition
