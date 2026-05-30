@@ -213,11 +213,16 @@ public class RevolverAnimation extends Application {
 
         driverInput = new DriverInput(opModeType, searchOrder, revolverTracking, patternColors);
 
+        //**TODO If the driver hits the TeleOp reset button then reinitialize the
+        // RadioButtons for the slots.
+        if (opModeType == OpModeType.TELEOP) {
+            controller.resetTeleOpUIButton.setOnAction(e -> {
+
+            });
+        }
+
         // Get the final slot and color selections when the driver hits the Play button.
         controller.playButton.setOnAction(e -> {
-            // Don't enable the Play button until all the UI selections have been made.
-            controller.playButton.setDisable(true);
-
             // If the driver hits the Play button but the (TeleOp)
             // configuration is not complete, put out an alert and return.
             if (opModeType == OpModeType.TELEOP) {
@@ -227,7 +232,6 @@ public class RevolverAnimation extends Application {
                     createPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor);
                 else {
                     alertSlotSelectionMissing(UIPositionLabel.CENTER.toString());
-                    controller.playButton.setDisable(false);
                     return;
                 }
 
@@ -237,7 +241,6 @@ public class RevolverAnimation extends Application {
                     createPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor);
                 else {
                     alertSlotSelectionMissing(UIPositionLabel.LEFT.toString());
-                    controller.playButton.setDisable(false);
                     return;
                 }
 
@@ -247,10 +250,14 @@ public class RevolverAnimation extends Application {
                     createPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor);
                 else {
                     alertSlotSelectionMissing(UIPositionLabel.RIGHT.toString());
-                    controller.playButton.setDisable(false);
                     return;
                 }
             }
+
+            //**TODO hide the TeleOp reset button
+            // myButton.setVisible(false);
+            // Ready to play so disable the Play button.
+            controller.playButton.setDisable(true);
 
             // Show the initial orientation (top center shooting for Auto,
             // bottom center intake for TeleOp).
