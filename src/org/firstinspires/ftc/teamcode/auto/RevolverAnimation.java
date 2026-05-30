@@ -67,6 +67,8 @@ public class RevolverAnimation extends Application {
 
     private final EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> teleopRevolverTracking = new EnumMap<>(RevolverMotion.RevolverTrackingPosition.class);
 
+    private boolean updatingProgrammatically = false; // for slot RadioButtons
+
     //**TODO Need labels for slots. The labels should remain horizontal even
     // as the revolver rotates. But avoid clutter; slots are shown in the UI.
 
@@ -172,7 +174,9 @@ public class RevolverAnimation extends Application {
 
         // Configure the UI.
         if (opModeType == OpModeType.AUTO) {
-            // Use the default preload autoRevolverTracking
+            controller.resetTeleOpUIButton.setVisible(false); // hide the TeleOp reset button
+
+            // Use the default preload autoRevolverTracking.
             searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
             revolverTracking = autoRevolverTracking;
 
@@ -219,11 +223,14 @@ public class RevolverAnimation extends Application {
         // RadioButtons for the slots.
         if (opModeType == OpModeType.TELEOP) {
             controller.resetTeleOpUIButton.setOnAction(e -> {
-                slotGroupCenter.second.setDisable(false);
+                slotGroupCenter.second.setDisable(false); // enable the enclosing HBox
                 slotGroupLeft.second.setDisable(false);
                 slotGroupRight.second.setDisable(false);
 
-                //**TODO Need to enable all slot radio buttons.
+                // Enable all slot radio buttons.
+                enableSlotRadioButtons(slotGroupCenter.first);
+                enableSlotRadioButtons(slotGroupLeft.first);
+                enableSlotRadioButtons(slotGroupRight.first);
             });
         }
 
@@ -260,8 +267,6 @@ public class RevolverAnimation extends Application {
                 }
             }
 
-
-            controller.resetTeleOpUIButton.setVisible(false); // hide the TeleOp reset button
             controller.playButton.setDisable(true); // ready to play so disable the Play button
 
             // Show the initial orientation (top center shooting for Auto,
@@ -392,6 +397,10 @@ public class RevolverAnimation extends Application {
     // to press Play, each unique slot will be assigned to a unique RevolverTrackingPosition.
     private void setSlotListener(ToggleGroup pSlotGroup, ToggleGroup pOtherSlotGroup1, ToggleGroup pOtherSlotGroup2) {
         pSlotGroup.selectedToggleProperty().addListener((observable, oldToggle, newToggle) -> {
+            if (updatingProgrammatically) {
+                return; // Ignore the event while the flag is active
+            }
+
             //!! These tests must be done in this order - oldToggle first.
             if (oldToggle != null) { // if toggling from on to off ...
                 RadioButton slotButton = (RadioButton) oldToggle;
@@ -439,6 +448,17 @@ public class RevolverAnimation extends Application {
             if (selected.getText().equals(pSlotText) && selected.isDisabled())
                 selected.setDisable(false);
         }
+    }
+
+    private void enableSlotRadioButtons(ToggleGroup pSlotGroup) {
+        updatingProgrammatically = true; // temporarily disable listener to change values programmatically
+
+        for (Toggle toggle : pSlotGroup.getToggles()) {
+            RadioButton oneButton = (RadioButton) toggle;
+                oneButton.setDisable(false);
+        }
+
+        updatingProgrammatically = false;
     }
 
     private String getSelectedRadioButton(ToggleGroup pToggleGroup) {

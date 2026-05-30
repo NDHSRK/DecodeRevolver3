@@ -43,7 +43,7 @@
                </font>
             </Label>
          </HBox>
-         <Label fx:id="opModeLabel" prefHeight="26.0" prefWidth="196.0" text="Revolver Configuration for " GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
+         <Label fx:id="opModeLabel" prefHeight="26.0" prefWidth="250.0" text="Revolver Configuration for " GridPane.columnSpan="2147483647" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
             <GridPane.margin>
                <Insets />
             </GridPane.margin>
