@@ -128,6 +128,7 @@ public class RevolverAnimation extends Application {
 
         String opModeLabel = controller.opModeLabel.getText();
         if (selectedOpMode.getText().equals("Auto top shoot")) {
+            controller.opModeLabel.setText(opModeLabel + "Auto"); //**TODO truncated ...
             controller.firstPositionLabel.setText(UIPositionLabel.CENTER.toString());
             controller.secondPositionLabel.setText(UIPositionLabel.LEFT.toString());
             controller.thirdPositionLabel.setText(UIPositionLabel.RIGHT.toString());
@@ -143,6 +144,7 @@ public class RevolverAnimation extends Application {
             colorGroupRight =  Pair.create(uiColorSelection(controller.thirdColorHBox), controller.thirdColorHBox);
 
         } else { // must be TeleOp
+            controller.opModeLabel.setText(opModeLabel + "TeleOp");
             controller.firstPositionLabel.setText(UIPositionLabel.LEFT.toString());
             controller.secondPositionLabel.setText(UIPositionLabel.RIGHT.toString());
             controller.thirdPositionLabel.setText(UIPositionLabel.CENTER.toString());
@@ -213,11 +215,15 @@ public class RevolverAnimation extends Application {
 
         driverInput = new DriverInput(opModeType, searchOrder, revolverTracking, patternColors);
 
-        //**TODO If the driver hits the TeleOp reset button then reinitialize the
+        // If the driver hits the TeleOp reset button then re-enable the
         // RadioButtons for the slots.
         if (opModeType == OpModeType.TELEOP) {
             controller.resetTeleOpUIButton.setOnAction(e -> {
+                slotGroupCenter.second.setDisable(false);
+                slotGroupLeft.second.setDisable(false);
+                slotGroupRight.second.setDisable(false);
 
+                //**TODO Need to enable all slot radio buttons.
             });
         }
 
@@ -254,10 +260,9 @@ public class RevolverAnimation extends Application {
                 }
             }
 
-            //**TODO hide the TeleOp reset button
-            // myButton.setVisible(false);
-            // Ready to play so disable the Play button.
-            controller.playButton.setDisable(true);
+
+            controller.resetTeleOpUIButton.setVisible(false); // hide the TeleOp reset button
+            controller.playButton.setDisable(true); // ready to play so disable the Play button
 
             // Show the initial orientation (top center shooting for Auto,
             // bottom center intake for TeleOp).
