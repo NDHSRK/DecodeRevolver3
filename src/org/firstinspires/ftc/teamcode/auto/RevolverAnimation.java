@@ -49,11 +49,6 @@ public class RevolverAnimation extends Application {
 
     private static final String POSITION_PREFIX = "REAR_VIEW_";
 
-    // In the GridPane for the UI set the constant row
-    // offsets from the revolver position.
-    private static final int SLOT_ROW_OFFSET = 1;
-    private static final int COLOR_ROW_OFFSET = 2;
-
     private DriverInput driverInput;
 
     // In Auto, these are the starting contents of the revolver after the pre-loads
@@ -69,7 +64,7 @@ public class RevolverAnimation extends Application {
 
     private boolean updatingProgrammatically = false; // for slot RadioButtons
 
-    //**TODO Need labels for slots. The labels should remain horizontal even
+    //**TODO ?Need labels for slots. The labels should remain horizontal even
     // as the revolver rotates. But avoid clutter; slots are shown in the UI.
 
     @Override
@@ -83,14 +78,8 @@ public class RevolverAnimation extends Application {
         // Here's how this works:
         // First show a modal popup radio button for OpMode selection.
         // This must be done first because the driver's selection
-        // determines the appearance of the options in the next screen.
+        // determines the appearance of the options in the UI.
         RadioButton selectedOpMode = showOpModePopup(pStage);
-
-        // If the driver selects the radio button for "Auto top shoot"
-        // then the UI for slot and color selection will be laid out
-        // in the order CENTER, LEFT, RIGHT. If the user selects
-        // "TeleOp bottom intake" then the order will be LEFT, RIGHT,
-        // CENTER.
 
         // For the next 2 lines to work with later versions of JavaFX,
         // the fxml file must be under the same package as the current
@@ -106,12 +95,12 @@ public class RevolverAnimation extends Application {
         ComboBox<String> artifactCombo = new ComboBox<>();
         artifactCombo.setPrefWidth(Region.USE_COMPUTED_SIZE);
 
-        // 2. Add three choices
+        // 2. Add three choices.
         artifactCombo.getItems().addAll(RobotConstantsDecode.ObeliskPattern.GREEN_PURPLE_PURPLE.toString(),
                 RobotConstantsDecode.ObeliskPattern.PURPLE_GREEN_PURPLE.toString(),
                 RobotConstantsDecode.ObeliskPattern.PURPLE_PURPLE_GREEN.toString());
 
-        // 3. Set PURPLE_GREEN_PURPLE as the default
+        // 3. Set PURPLE_GREEN_PURPLE as the default.
         artifactCombo.setValue(RobotConstantsDecode.ObeliskPattern.PURPLE_GREEN_PURPLE.toString());
 
         // To get the correct spacing between the label "Artifact pattern"
@@ -128,9 +117,14 @@ public class RevolverAnimation extends Application {
         Pair<ToggleGroup, HBox> colorGroupLeft;
         Pair<ToggleGroup, HBox> colorGroupRight;
 
+        // If the driver has selected the radio button for "Auto top
+        // shoot" then the UI for slot and color selection will be
+        // laid out in the order CENTER, LEFT, RIGHT. If the user
+        // selects "TeleOp bottom intake" then the order will be
+        // LEFT, RIGHT, CENTER.
         String opModeLabel = controller.opModeLabel.getText();
         if (selectedOpMode.getText().equals("Auto top shoot")) {
-            controller.opModeLabel.setText(opModeLabel + "Auto"); //**TODO truncated ...
+            controller.opModeLabel.setText(opModeLabel + "Auto");
             controller.firstPositionLabel.setText(UIPositionLabel.CENTER.toString());
             controller.secondPositionLabel.setText(UIPositionLabel.LEFT.toString());
             controller.thirdPositionLabel.setText(UIPositionLabel.RIGHT.toString());
@@ -162,16 +156,19 @@ public class RevolverAnimation extends Application {
             colorGroupCenter =  Pair.create(uiColorSelection(controller.thirdColorHBox), controller.thirdColorHBox);
         }
 
+        //**TODO Why set listeners for Auto; slot selection is disabled so they won't be used.
         // Set listeners.
         setSlotListener(slotGroupCenter.first, slotGroupLeft.first, slotGroupRight.first);
         setSlotListener(slotGroupLeft.first, slotGroupCenter.first, slotGroupRight.first);
         setSlotListener(slotGroupRight.first, slotGroupCenter.first, slotGroupLeft.first);
 
         // Gather all the UI responses and instantiate the DriverInput class.
+        //**TODO Move the next 3 lines up ...
         OpModeType opModeType = selectedOpMode.getText().equals("Auto top shoot") ? OpModeType.AUTO : OpModeType.TELEOP;
         RevolverMotion.SearchOrder searchOrder;
         EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
 
+        //**TODO Why test again; merge with above.
         // Configure the UI.
         if (opModeType == OpModeType.AUTO) {
             controller.resetTeleOpUIButton.setVisible(false); // hide the TeleOp reset button
@@ -219,7 +216,7 @@ public class RevolverAnimation extends Application {
 
         driverInput = new DriverInput(opModeType, searchOrder, revolverTracking, patternColors);
 
-        // If the driver hits the TeleOp reset button then re-enable the
+        //**TODO Move up ... If the driver hits the TeleOp reset button then re-enable the
         // RadioButtons for the slots.
         if (opModeType == OpModeType.TELEOP) {
             controller.resetTeleOpUIButton.setOnAction(e -> {
@@ -269,16 +266,11 @@ public class RevolverAnimation extends Application {
 
             controller.playButton.setDisable(true); // ready to play so disable the Play button
 
-            // Show the initial orientation (top center shooting for Auto,
+            // Set the initial orientation (top center shooting for Auto,
             // bottom center intake for TeleOp).
             initializeRevolverDisplay(driverInput);
 
             rapidFire(); // run the simulation
-
-            //**TODO For now Close the main window; in the real application
-            // you may want to support re-configuring and re-running.
-            //playButton.setDisable(false);
-            //((Stage) playButton.getScene().getWindow()).close();
         });
 
         pStage.setTitle("FTC Decode: Team 4348 Revolver");
