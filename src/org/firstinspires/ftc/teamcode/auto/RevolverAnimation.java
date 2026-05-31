@@ -18,6 +18,7 @@ import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -119,12 +120,17 @@ public class RevolverAnimation extends Application {
 
         // If the driver has selected the radio button for "Auto top
         // shoot" then the UI for slot and color selection will be
-        // laid out in the order CENTER, LEFT, RIGHT. If the user
-        // selects "TeleOp bottom intake" then the order will be
-        // LEFT, RIGHT, CENTER.
+        // laid out in the order CENTER, LEFT, RIGHT - but remember:
+        // the UI is not active for Auto because the positions are
+        // fixed. If the user selects "TeleOp bottom intake" then
+        // the order will be LEFT, RIGHT, CENTER and the UI will be
+        // active.
+        Text uiInstructions;
         String opModeLabel = controller.opModeLabel.getText();
         if (selectedOpMode.getText().equals("Auto top shoot")) {
             controller.opModeLabel.setText(opModeLabel + "Auto");
+            uiInstructions = new Text("For Auto the user interface is not active.\n" +
+                    "Press Play to run the animation.");
             controller.firstPositionLabel.setText(UIPositionLabel.CENTER.toString());
             controller.secondPositionLabel.setText(UIPositionLabel.LEFT.toString());
             controller.thirdPositionLabel.setText(UIPositionLabel.RIGHT.toString());
@@ -141,6 +147,9 @@ public class RevolverAnimation extends Application {
 
         } else { // must be TeleOp
             controller.opModeLabel.setText(opModeLabel + "TeleOp");
+            uiInstructions = new Text("For TeleOp the user interface is active.\n" +
+                    "Select a Revolver slot and a color for each position.\n" +
+                    "Press Play to run the animation.");
             controller.firstPositionLabel.setText(UIPositionLabel.LEFT.toString());
             controller.secondPositionLabel.setText(UIPositionLabel.RIGHT.toString());
             controller.thirdPositionLabel.setText(UIPositionLabel.CENTER.toString());
@@ -231,6 +240,16 @@ public class RevolverAnimation extends Application {
             });
         }
 
+        // Center the user inteface instructions in the Revolver Pane on the left.
+        // Bind text X position: (PaneWidth / 2) - (TextWidth / 2)
+        uiInstructions.setFont(Font.font("Arial", 16));
+        uiInstructions.xProperty().bind(controller.revolverPane.widthProperty().divide(2).subtract(uiInstructions.getLayoutBounds().getWidth() / 2));
+
+        // Bind text Y position: (PaneHeight / 2) + (TextHeight / 4) to adjust for baseline
+        uiInstructions.yProperty().bind(controller.revolverPane.heightProperty().divide(2).add(uiInstructions.getLayoutBounds().getHeight() / 4));
+
+        controller.revolverPane.getChildren().add(uiInstructions);
+
         // Get the final slot and color selections when the driver hits the Play button.
         controller.playButton.setOnAction(e -> {
             // If the driver hits the Play button but the (TeleOp)
@@ -264,7 +283,10 @@ public class RevolverAnimation extends Application {
                 }
             }
 
-            controller.playButton.setDisable(true); // ready to play so disable the Play button
+            // Ready to play.
+            controller.revolverPane.getChildren().remove(uiInstructions);
+            controller.resetTeleOpUIButton.setVisible(false); // hide the TeleOp reset button
+            controller.playButton.setDisable(true);
 
             // Set the initial orientation (top center shooting for Auto,
             // bottom center intake for TeleOp).
