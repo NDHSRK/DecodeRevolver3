@@ -192,6 +192,7 @@ public class RevolverUI {
             }
         }
 
+        //**TODO Access to the RevolverPane doesn't belong here; return uiInstructions.
         // Center the user inteface instructions in the Revolver Pane on the left.
         // Bind text X position: (PaneWidth / 2) - (TextWidth / 2)
         uiInstructions.setFont(Font.font("Arial", 16));
@@ -202,7 +203,9 @@ public class RevolverUI {
         controller.revolverPane.getChildren().add(uiInstructions);
 
         // Now gather all of the driver input.
-        return new DriverInput(opModeType, searchOrder, revolverTracking, patternColors);
+        return new DriverInput(opModeType, searchOrder, revolverTracking, patternColors,
+                slotGroupCenter.first, slotGroupCenter.first, slotGroupRight.first,
+                colorGroupCenter.first, colorGroupLeft.first, colorGroupRight.first);
     }
 
     // For a single RevolverTrackingPosition create a RadioButton for slot selection.
@@ -340,14 +343,28 @@ public class RevolverUI {
         public final RevolverMotion.SearchOrder searchOrder;
         public final EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
         public final List<RobotConstantsDecode.ArtifactColor> artifactPattern;
+        public final ToggleGroup slotToggleCenter;
+        public final ToggleGroup slotToggleLeft;
+        public final ToggleGroup slotToggleRight;
+        public final ToggleGroup colorToggleCenter;
+        public final ToggleGroup colorToggleLeft;
+        public final ToggleGroup colorToggleRight;
 
         DriverInput(OpModeType pOpModeType, RevolverMotion.SearchOrder pSearchOrder,
                     EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> pRevolverTracking,
-                    List<RobotConstantsDecode.ArtifactColor> pArtifactPattern) {
+                    List<RobotConstantsDecode.ArtifactColor> pArtifactPattern,
+                    ToggleGroup pSlotToggleCenter, ToggleGroup pSlotToggleLeft, ToggleGroup pSlotToggleRight,
+                    ToggleGroup pColorToggleCenter, ToggleGroup pColorToggleLeft, ToggleGroup pColorToggleRight) {
             opModeType = pOpModeType;
             searchOrder = pSearchOrder;
             revolverTracking = pRevolverTracking;
             artifactPattern = pArtifactPattern;
+            slotToggleCenter = pSlotToggleCenter;
+            slotToggleLeft = pSlotToggleLeft;
+            slotToggleRight = pSlotToggleRight;
+            colorToggleCenter = pColorToggleCenter;
+            colorToggleLeft = pColorToggleLeft;
+            colorToggleRight = pColorToggleRight;
         }
 
     }

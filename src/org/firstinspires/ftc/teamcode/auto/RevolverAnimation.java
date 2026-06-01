@@ -96,8 +96,8 @@ public class RevolverAnimation extends Application {
             // If the driver hits the Play button but the (TeleOp)
             // configuration is not complete, put out an alert and return.
             if (driverInput.opModeType == RevolverUI.OpModeType.TELEOP) {
-                String centerSlot = getSelectedRadioButton(slotGroupCenter.first);
-                String centerColor = getSelectedRadioButton(colorGroupCenter.first);
+                String centerSlot = getSelectedRadioButton(driverInput.slotToggleCenter);
+                String centerColor = getSelectedRadioButton(driverInput.colorToggleCenter);
                 if (centerSlot != null && centerColor != null)
                     createPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor);
                 else {
@@ -105,8 +105,8 @@ public class RevolverAnimation extends Application {
                     return;
                 }
 
-                String leftSlot = getSelectedRadioButton(slotGroupLeft.first);
-                String leftColor = getSelectedRadioButton(colorGroupLeft.first);
+                String leftSlot = getSelectedRadioButton(driverInput.slotToggleLeft);
+                String leftColor = getSelectedRadioButton(driverInput.colorToggleLeft);
                 if (leftSlot != null && leftColor != null)
                     createPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor);
                 else {
@@ -114,8 +114,8 @@ public class RevolverAnimation extends Application {
                     return;
                 }
 
-                String rightSlot = getSelectedRadioButton(slotGroupRight.first);
-                String rightColor = getSelectedRadioButton(colorGroupRight.first);
+                String rightSlot = getSelectedRadioButton(driverInput.slotToggleRight);
+                String rightColor = getSelectedRadioButton(driverInput.colorToggleRight);
                 if (rightSlot != null && rightColor != null)
                     createPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor);
                 else {
