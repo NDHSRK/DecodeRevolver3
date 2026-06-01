@@ -65,8 +65,9 @@ public class RevolverAnimation extends Application {
 
     private boolean updatingProgrammatically = false; // for slot RadioButtons
 
-    //**TODO ?Need labels for slots. The labels should remain horizontal even
-    // as the revolver rotates. But avoid clutter; slots are shown in the UI.
+    //**TODO ?Need labels for slots? The labels should remain horizontal even
+    // as the revolver rotates. But look at the problems with rotating text
+    // for "Unknown" and "Empty".
 
     @Override
     public void start(final Stage pStage) throws IOException {
@@ -118,6 +119,11 @@ public class RevolverAnimation extends Application {
         Pair<ToggleGroup, HBox> colorGroupLeft;
         Pair<ToggleGroup, HBox> colorGroupRight;
 
+        // Variables to hold the UI responses.
+        OpModeType opModeType;
+        RevolverMotion.SearchOrder searchOrder;
+        EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
+
         // If the driver has selected the radio button for "Auto top
         // shoot" then the UI for slot and color selection will be
         // laid out in the order CENTER, LEFT, RIGHT - but remember:
@@ -128,63 +134,35 @@ public class RevolverAnimation extends Application {
         Text uiInstructions;
         String opModeLabel = controller.opModeLabel.getText();
         if (selectedOpMode.getText().equals("Auto top shoot")) {
+            opModeType = OpModeType.AUTO;
             controller.opModeLabel.setText(opModeLabel + "Auto");
-            uiInstructions = new Text("For Auto the user interface is not active.\n" +
-                    "Press Play to run the animation.");
+
+            // Use the default preload autoRevolverTracking.
+            searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
+            revolverTracking = autoRevolverTracking;
+
+            uiInstructions = new Text("""
+                    For Auto the user interface is not active.
+                    Press Play to run the animation.""");
+
             controller.firstPositionLabel.setText(UIPositionLabel.CENTER.toString());
             controller.secondPositionLabel.setText(UIPositionLabel.LEFT.toString());
             controller.thirdPositionLabel.setText(UIPositionLabel.RIGHT.toString());
 
             // Slot selection.
             slotGroupCenter = Pair.create(uiSlotSelection(controller.firstSlotHBox), controller.firstSlotHBox);
-            slotGroupLeft =  Pair.create(uiSlotSelection(controller.secondSlotHBox), controller.secondSlotHBox);
-            slotGroupRight =  Pair.create(uiSlotSelection(controller.thirdSlotHBox), controller.thirdSlotHBox);
+            slotGroupLeft = Pair.create(uiSlotSelection(controller.secondSlotHBox), controller.secondSlotHBox);
+            slotGroupRight = Pair.create(uiSlotSelection(controller.thirdSlotHBox), controller.thirdSlotHBox);
 
             // Color Selection.
-            colorGroupCenter =  Pair.create(uiColorSelection(controller.firstColorHBox), controller.firstColorHBox);
-            colorGroupLeft =  Pair.create(uiColorSelection(controller.secondColorHBox), controller.secondColorHBox);
-            colorGroupRight =  Pair.create(uiColorSelection(controller.thirdColorHBox), controller.thirdColorHBox);
+            colorGroupCenter = Pair.create(uiColorSelection(controller.firstColorHBox), controller.firstColorHBox);
+            colorGroupLeft = Pair.create(uiColorSelection(controller.secondColorHBox), controller.secondColorHBox);
+            colorGroupRight = Pair.create(uiColorSelection(controller.thirdColorHBox), controller.thirdColorHBox);
 
-        } else { // must be TeleOp
-            controller.opModeLabel.setText(opModeLabel + "TeleOp");
-            uiInstructions = new Text("For TeleOp the user interface is active.\n" +
-                    "Select a Revolver slot and a color for each position.\n" +
-                    "Press Play to run the animation.");
-            controller.firstPositionLabel.setText(UIPositionLabel.LEFT.toString());
-            controller.secondPositionLabel.setText(UIPositionLabel.RIGHT.toString());
-            controller.thirdPositionLabel.setText(UIPositionLabel.CENTER.toString());
+            // No need to set listeners for Auto; slot selection is disabled.
 
-            // Slot selection.
-            slotGroupLeft =  Pair.create(uiSlotSelection(controller.firstSlotHBox), controller.firstSlotHBox);
-            slotGroupRight =  Pair.create(uiSlotSelection(controller.secondSlotHBox), controller.secondSlotHBox);
-            slotGroupCenter =  Pair.create(uiSlotSelection(controller.thirdSlotHBox), controller.thirdSlotHBox);
-
-            // Color Selection.
-            colorGroupLeft =  Pair.create(uiColorSelection(controller.firstColorHBox), controller.firstColorHBox);
-            colorGroupRight =  Pair.create(uiColorSelection(controller.secondColorHBox), controller.secondColorHBox);
-            colorGroupCenter =  Pair.create(uiColorSelection(controller.thirdColorHBox), controller.thirdColorHBox);
-        }
-
-        //**TODO Why set listeners for Auto; slot selection is disabled so they won't be used.
-        // Set listeners.
-        setSlotListener(slotGroupCenter.first, slotGroupLeft.first, slotGroupRight.first);
-        setSlotListener(slotGroupLeft.first, slotGroupCenter.first, slotGroupRight.first);
-        setSlotListener(slotGroupRight.first, slotGroupCenter.first, slotGroupLeft.first);
-
-        // Gather all the UI responses and instantiate the DriverInput class.
-        //**TODO Move the next 3 lines up ...
-        OpModeType opModeType = selectedOpMode.getText().equals("Auto top shoot") ? OpModeType.AUTO : OpModeType.TELEOP;
-        RevolverMotion.SearchOrder searchOrder;
-        EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
-
-        //**TODO Why test again; merge with above.
-        // Configure the UI.
-        if (opModeType == OpModeType.AUTO) {
-            controller.resetTeleOpUIButton.setVisible(false); // hide the TeleOp reset button
-
-            // Use the default preload autoRevolverTracking.
-            searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
-            revolverTracking = autoRevolverTracking;
+            // Hide the TeleOp reset button.
+            controller.resetTeleOpUIButton.setVisible(false); //
 
             // Since slot and color selections are fixed in our
             // standard setup for the Decode game, disable their
@@ -196,9 +174,49 @@ public class RevolverAnimation extends Application {
             colorGroupCenter.second.setDisable(true);
             colorGroupLeft.second.setDisable(true);
             colorGroupRight.second.setDisable(true);
-        } else { // TeleOp
+
+        } else { // must be TeleOp
+            opModeType = OpModeType.TELEOP;
+            controller.opModeLabel.setText(opModeLabel + "TeleOp");
+
             searchOrder = RevolverMotion.SearchOrder.ON_TRANSITION;
             revolverTracking = teleopRevolverTracking;
+
+            uiInstructions = new Text("""
+                    For TeleOp the user interface is active.
+                    Select a Revolver slot and a color for each position.
+                    Press Play to run the animation.""");
+            controller.firstPositionLabel.setText(UIPositionLabel.LEFT.toString());
+            controller.secondPositionLabel.setText(UIPositionLabel.RIGHT.toString());
+            controller.thirdPositionLabel.setText(UIPositionLabel.CENTER.toString());
+
+            // Slot selection.
+            slotGroupLeft = Pair.create(uiSlotSelection(controller.firstSlotHBox), controller.firstSlotHBox);
+            slotGroupRight = Pair.create(uiSlotSelection(controller.secondSlotHBox), controller.secondSlotHBox);
+            slotGroupCenter = Pair.create(uiSlotSelection(controller.thirdSlotHBox), controller.thirdSlotHBox);
+
+            // Color Selection.
+            colorGroupLeft = Pair.create(uiColorSelection(controller.firstColorHBox), controller.firstColorHBox);
+            colorGroupRight = Pair.create(uiColorSelection(controller.secondColorHBox), controller.secondColorHBox);
+            colorGroupCenter = Pair.create(uiColorSelection(controller.thirdColorHBox), controller.thirdColorHBox);
+
+            // Set the listeners that ensure that a slot can only be selected once.
+            setSlotListener(slotGroupCenter.first, slotGroupLeft.first, slotGroupRight.first);
+            setSlotListener(slotGroupLeft.first, slotGroupCenter.first, slotGroupRight.first);
+            setSlotListener(slotGroupRight.first, slotGroupCenter.first, slotGroupLeft.first);
+
+            // If the driver hits the TeleOp reset button then re-enable the
+            // RadioButtons for the slots.
+            controller.resetTeleOpUIButton.setOnAction(e -> {
+                slotGroupCenter.second.setDisable(false); // enable the enclosing HBox
+                slotGroupLeft.second.setDisable(false);
+                slotGroupRight.second.setDisable(false);
+
+                // Enable all slot radio buttons.
+                enableSlotRadioButtons(slotGroupCenter.first);
+                enableSlotRadioButtons(slotGroupLeft.first);
+                enableSlotRadioButtons(slotGroupRight.first);
+            });
         }
 
         // From the ComboBox selection for the artifact pattern
@@ -223,23 +241,6 @@ public class RevolverAnimation extends Application {
             }
         }
 
-        driverInput = new DriverInput(opModeType, searchOrder, revolverTracking, patternColors);
-
-        //**TODO Move up ... If the driver hits the TeleOp reset button then re-enable the
-        // RadioButtons for the slots.
-        if (opModeType == OpModeType.TELEOP) {
-            controller.resetTeleOpUIButton.setOnAction(e -> {
-                slotGroupCenter.second.setDisable(false); // enable the enclosing HBox
-                slotGroupLeft.second.setDisable(false);
-                slotGroupRight.second.setDisable(false);
-
-                // Enable all slot radio buttons.
-                enableSlotRadioButtons(slotGroupCenter.first);
-                enableSlotRadioButtons(slotGroupLeft.first);
-                enableSlotRadioButtons(slotGroupRight.first);
-            });
-        }
-
         // Center the user inteface instructions in the Revolver Pane on the left.
         // Bind text X position: (PaneWidth / 2) - (TextWidth / 2)
         uiInstructions.setFont(Font.font("Arial", 16));
@@ -247,8 +248,10 @@ public class RevolverAnimation extends Application {
 
         // Bind text Y position: (PaneHeight / 2) + (TextHeight / 4) to adjust for baseline
         uiInstructions.yProperty().bind(controller.revolverPane.heightProperty().divide(2).add(uiInstructions.getLayoutBounds().getHeight() / 4));
-
         controller.revolverPane.getChildren().add(uiInstructions);
+
+        // Now gather all of the driver input.
+        driverInput = new DriverInput(opModeType, searchOrder, revolverTracking, patternColors);
 
         // Get the final slot and color selections when the driver hits the Play button.
         controller.playButton.setOnAction(e -> {
@@ -315,29 +318,31 @@ public class RevolverAnimation extends Application {
         // Auto -> top center shoot; TeleOp -> bottom center intake.
         ToggleGroup opModeGroup = new ToggleGroup();
         RadioButton rbAuto = new RadioButton("Auto top shoot");
+        rbAuto.setFont(Font.font("Arial", 14));
         rbAuto.setSelected(true);
         rbAuto.setToggleGroup(opModeGroup);
 
         RadioButton rbTeleOp = new RadioButton("TeleOp bottom intake");
+        rbTeleOp.setFont(Font.font("Arial", 14));
         rbTeleOp.setToggleGroup(opModeGroup);
 
         // Lay out side-by-side.
-        HBox hboxOpMode = new HBox(15); // 15px spacing
-        // Indent by 10 pixels on the left
-        hboxOpMode.setPadding(new Insets(0, 0, 0, 10));
-        hboxOpMode.getChildren().addAll(rbAuto, rbTeleOp);
+        HBox hboxOpMode = new HBox(15, rbAuto, rbTeleOp); // 15px spacing
+        hboxOpMode.setPadding(new Insets(0, 0, 0, 10)); // indent by 10 pixels on the left
 
         Button doneButton = new Button("Done");
+        doneButton.setFont(Font.font("Arial", 14));
+
+        VBox vLayout = new VBox(20); // 20 is the spacing between elements
+        vLayout.getChildren().addAll(hboxOpMode, doneButton);
+        vLayout.setAlignment(Pos.CENTER);
+
         doneButton.setOnAction(e -> {
             // Close the popup window
             ((Stage) doneButton.getScene().getWindow()).close();
         });
 
-        VBox vLayout = new VBox(10); // 10 is the spacing between elements
-        vLayout.getChildren().addAll(hboxOpMode, doneButton);
-        vLayout.setAlignment(Pos.CENTER);
-
-        Scene popupScene = new Scene(vLayout, 275, 100);
+        Scene popupScene = new Scene(vLayout, 315, 100);
         popupStage.setScene(popupScene);
         popupStage.setTitle("Select an OpMode");
         popupStage.showAndWait();
@@ -469,7 +474,7 @@ public class RevolverAnimation extends Application {
 
         for (Toggle toggle : pSlotGroup.getToggles()) {
             RadioButton oneButton = (RadioButton) toggle;
-                oneButton.setDisable(false);
+            oneButton.setDisable(false);
         }
 
         updatingProgrammatically = false;
@@ -604,6 +609,19 @@ public class RevolverAnimation extends Application {
                 pCircle.setFill(Color.LIGHTGRAY);
                 pCircle.setStroke(Color.RED);
                 pCircle.setStrokeWidth(10.0);
+
+                //**TODO The text shows and moves with the Circle but it rotates, e.g. upside-down.
+                //** It also re-appears in its original osition after the artifact shoots.
+
+                Text unknownText = new Text("Unknown");
+                unknownText.setFont(Font.font("Arial", 14));
+                unknownText.setStroke(Color.RED);
+
+                // Center the text bounding box over the specific center point of the artifact circle.
+                unknownText.layoutXProperty().bind(pCircle.centerXProperty().subtract(unknownText.getLayoutBounds().getWidth() / 2));
+                unknownText.layoutYProperty().bind(pCircle.centerYProperty().add(unknownText.getLayoutBounds().getHeight() / 4)); // Adjusted baseline offset
+                controller.revolver.getChildren().add(unknownText);
+
             }
 
             //**TODO rotating text "Empty"
@@ -672,10 +690,8 @@ public class RevolverAnimation extends Application {
 
         // Set the amount and direction of the JavFX rotation to the top.
         // Set the shot order.
-        //**TODO Need position and slot info for logging List<Pair<RevolverMotion.RevolverTrackingPosition, Circle>>
         double rotationToShootingPosition;
         List<Circle> fxShotOrder = new ArrayList<>();
-
         switch (driverInput.searchOrder) {
             case IN_PLACE: {
                 RobotLogCommon.d(TAG, "Auto: in-place rotation of slot " + firstShot.second.revolverSlot.name() + " at tracking position " + firstShot.first + " with color " + firstShot.second.color + " to the center");
@@ -753,8 +769,6 @@ public class RevolverAnimation extends Application {
         SequentialTransition rapidFire = new SequentialTransition();
         for (Circle oneArtifact : fxShotOrder) {
             RobotLogCommon.d(TAG, "Rotate artifact with fx:id " + oneArtifact.getId() + " " + rotationToShootingPosition + " degrees to top center");
-            //**TODO include " from position " + pos " with slot id " and color " + color.
-
             rapidFire.getChildren().add(rotateAndShoot(oneArtifact, rotationToShootingPosition));
             rotationToShootingPosition = 120.0; // rotate 120 degrees CW for the second and third shots
         }
