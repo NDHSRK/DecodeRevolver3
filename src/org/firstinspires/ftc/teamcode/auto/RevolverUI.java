@@ -13,9 +13,7 @@ import javafx.scene.text.Text;
 import org.firstinspires.ftc.ftcdevcommon.Pair;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 
 public class RevolverUI {
 
@@ -24,17 +22,6 @@ public class RevolverUI {
     private enum UIPositionLabel {LEFT, CENTER, RIGHT}
 
     private final RevolverController controller;
-
-    // In Auto, these are the starting contents of the revolver after the pre-loads
-    // have been placed. The representation of the revolver is from the point of view
-    // of an observer standing behind the robot.
-    private final EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> autoRevolverTracking = new EnumMap<>(Map.of(
-            RevolverMotion.RevolverTrackingPosition.REAR_VIEW_LEFT, new RevolverMotion.RevolverSlotInfo(RobotConstantsDecode.ArtifactColor.PURPLE, RevolverServo.RevolverSlot.SLOT_2),
-            RevolverMotion.RevolverTrackingPosition.REAR_VIEW_CENTER, new RevolverMotion.RevolverSlotInfo(RobotConstantsDecode.ArtifactColor.GREEN, RevolverServo.RevolverSlot.SLOT_0),
-            RevolverMotion.RevolverTrackingPosition.REAR_VIEW_RIGHT, new RevolverMotion.RevolverSlotInfo(RobotConstantsDecode.ArtifactColor.PURPLE, RevolverServo.RevolverSlot.SLOT_1)
-    ));
-
-    private final EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> teleopRevolverTracking = new EnumMap<>(RevolverMotion.RevolverTrackingPosition.class);
 
     private boolean updatingProgrammatically = false; // for slot RadioButtons
 
@@ -73,7 +60,6 @@ public class RevolverUI {
         // Variables to hold the UI responses.
         OpModeType opModeType;
         RevolverMotion.SearchOrder searchOrder;
-        EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
 
         // If the driver has selected the radio button for "Auto top
         // shoot" then the UI for slot and color selection will be
@@ -90,7 +76,6 @@ public class RevolverUI {
 
             // Use the default preload autoRevolverTracking.
             searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
-            revolverTracking = autoRevolverTracking;
 
             uiInstructions = new Text("""
                     For Auto the user interface is not active.
@@ -131,7 +116,6 @@ public class RevolverUI {
             controller.opModeLabel.setText(opModeLabel + "TeleOp");
 
             searchOrder = RevolverMotion.SearchOrder.ON_TRANSITION;
-            revolverTracking = teleopRevolverTracking;
 
             uiInstructions = new Text("""
                     For TeleOp the user interface is active.
@@ -203,7 +187,7 @@ public class RevolverUI {
         controller.revolverPane.getChildren().add(uiInstructions);
 
         // Now gather all of the driver input.
-        return new DriverInput(opModeType, searchOrder, revolverTracking, patternColors,
+        return new DriverInput(opModeType, uiInstructions, searchOrder, patternColors,
                 slotGroupCenter.first, slotGroupCenter.first, slotGroupRight.first,
                 colorGroupCenter.first, colorGroupLeft.first, colorGroupRight.first);
     }
@@ -340,8 +324,8 @@ public class RevolverUI {
 
     public static class DriverInput {
         public final OpModeType opModeType;
+        public final Text uiInstructions;
         public final RevolverMotion.SearchOrder searchOrder;
-        public final EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
         public final List<RobotConstantsDecode.ArtifactColor> artifactPattern;
         public final ToggleGroup slotToggleCenter;
         public final ToggleGroup slotToggleLeft;
@@ -350,14 +334,13 @@ public class RevolverUI {
         public final ToggleGroup colorToggleLeft;
         public final ToggleGroup colorToggleRight;
 
-        DriverInput(OpModeType pOpModeType, RevolverMotion.SearchOrder pSearchOrder,
-                    EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> pRevolverTracking,
+        DriverInput(OpModeType pOpModeType, Text pUiInstructions, RevolverMotion.SearchOrder pSearchOrder,
                     List<RobotConstantsDecode.ArtifactColor> pArtifactPattern,
                     ToggleGroup pSlotToggleCenter, ToggleGroup pSlotToggleLeft, ToggleGroup pSlotToggleRight,
                     ToggleGroup pColorToggleCenter, ToggleGroup pColorToggleLeft, ToggleGroup pColorToggleRight) {
             opModeType = pOpModeType;
+            uiInstructions = pUiInstructions;
             searchOrder = pSearchOrder;
-            revolverTracking = pRevolverTracking;
             artifactPattern = pArtifactPattern;
             slotToggleCenter = pSlotToggleCenter;
             slotToggleLeft = pSlotToggleLeft;

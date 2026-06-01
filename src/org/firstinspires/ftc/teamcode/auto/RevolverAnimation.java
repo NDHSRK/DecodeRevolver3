@@ -12,12 +12,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -44,16 +46,20 @@ public class RevolverAnimation extends Application {
 
     private RevolverController controller;
 
-    private enum OpModeType {AUTO, TELEOP}
-
     private enum UIPositionLabel {LEFT, CENTER, RIGHT}
 
     private static final String POSITION_PREFIX = "REAR_VIEW_";
 
-    private RevolverUI.DriverInput driverInput;
+    // In Auto, these are the starting contents of the revolver after the pre-loads
+    // have been placed. The representation of the revolver is from the point of view
+    // of an observer standing behind the robot.
+    private final EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> autoRevolverTracking = new EnumMap<>(Map.of(
+            RevolverMotion.RevolverTrackingPosition.REAR_VIEW_LEFT, new RevolverMotion.RevolverSlotInfo(RobotConstantsDecode.ArtifactColor.PURPLE, RevolverServo.RevolverSlot.SLOT_2),
+            RevolverMotion.RevolverTrackingPosition.REAR_VIEW_CENTER, new RevolverMotion.RevolverSlotInfo(RobotConstantsDecode.ArtifactColor.GREEN, RevolverServo.RevolverSlot.SLOT_0),
+            RevolverMotion.RevolverTrackingPosition.REAR_VIEW_RIGHT, new RevolverMotion.RevolverSlotInfo(RobotConstantsDecode.ArtifactColor.PURPLE, RevolverServo.RevolverSlot.SLOT_1)
+    ));
 
 
-    private boolean updatingProgrammatically = false; // for slot RadioButtons
 
     //**TODO ?Need labels for slots? The labels should remain horizontal even
     // as the revolver rotates. But look at the problems with rotating text
@@ -93,13 +99,16 @@ public class RevolverAnimation extends Application {
 
         // Get the final slot and color selections when the driver hits the Play button.
         controller.playButton.setOnAction(e -> {
-            // If the driver hits the Play button but the (TeleOp)
-            // configuration is not complete, put out an alert and return.
-            if (driverInput.opModeType == RevolverUI.OpModeType.TELEOP) {
+            EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
+            if (driverInput.opModeType == RevolverUI.OpModeType.AUTO) {
+                revolverTracking = autoRevolverTracking;
+            }
+           else { // TeleOp
+               revolverTracking = new EnumMap<>(RevolverMotion.RevolverTrackingPosition.class);
                 String centerSlot = getSelectedRadioButton(driverInput.slotToggleCenter);
                 String centerColor = getSelectedRadioButton(driverInput.colorToggleCenter);
                 if (centerSlot != null && centerColor != null)
-                    createPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor);
+                    createTeleOpPostIntakeTracking(UIPositionLabel.CENTER.toString(), centerSlot, centerColor, revolverTracking);
                 else {
                     alertSlotSelectionMissing(UIPositionLabel.CENTER.toString());
                     return;
@@ -108,7 +117,7 @@ public class RevolverAnimation extends Application {
                 String leftSlot = getSelectedRadioButton(driverInput.slotToggleLeft);
                 String leftColor = getSelectedRadioButton(driverInput.colorToggleLeft);
                 if (leftSlot != null && leftColor != null)
-                    createPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor);
+                    createTeleOpPostIntakeTracking(UIPositionLabel.LEFT.toString(), leftSlot, leftColor, revolverTracking);
                 else {
                     alertSlotSelectionMissing(UIPositionLabel.LEFT.toString());
                     return;
@@ -117,7 +126,7 @@ public class RevolverAnimation extends Application {
                 String rightSlot = getSelectedRadioButton(driverInput.slotToggleRight);
                 String rightColor = getSelectedRadioButton(driverInput.colorToggleRight);
                 if (rightSlot != null && rightColor != null)
-                    createPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor);
+                    createTeleOpPostIntakeTracking(UIPositionLabel.RIGHT.toString(), rightSlot, rightColor, revolverTracking);
                 else {
                     alertSlotSelectionMissing(UIPositionLabel.RIGHT.toString());
                     return;
@@ -125,15 +134,15 @@ public class RevolverAnimation extends Application {
             }
 
             // Ready to play.
-            controller.revolverPane.getChildren().remove(uiInstructions);
+            controller.revolverPane.getChildren().remove(driverInput.uiInstructions);
             controller.resetTeleOpUIButton.setVisible(false); // hide the TeleOp reset button
             controller.playButton.setDisable(true);
 
             // Set the initial orientation (top center shooting for Auto,
             // bottom center intake for TeleOp).
-            initializeRevolverDisplay(driverInput);
+            initializeRevolverDisplay(driverInput, revolverTracking);
 
-            rapidFire(); // run the simulation
+            rapidFire(driverInput, revolverTracking); // run the simulation
         });
 
         pStage.setTitle("FTC Decode: Team 4348 Revolver");
@@ -203,7 +212,8 @@ public class RevolverAnimation extends Application {
         alert.showAndWait();
     }
 
-    private void createPostIntakeTracking(String pUIPositionLabel, String pSlot, String pColor) {
+    private void createTeleOpPostIntakeTracking(String pUIPositionLabel, String pSlot, String pColor,
+                                                EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> pTeleOpRevolverTracking) {
         RevolverMotion.RevolverTrackingPosition position = RevolverMotion.RevolverTrackingPosition.valueOf(POSITION_PREFIX + pUIPositionLabel);
         RevolverServo.RevolverSlot slot = RevolverServo.RevolverSlot.valueOf(pSlot.toUpperCase());
         String enumColor = pColor.toUpperCase();
@@ -211,7 +221,7 @@ public class RevolverAnimation extends Application {
                 enumColor.equals("EMPTY") ? RobotConstantsDecode.ArtifactColor.NPOS :
                         RobotConstantsDecode.ArtifactColor.valueOf(pColor.toUpperCase());
 
-        teleopRevolverTracking.put(position, new RevolverMotion.RevolverSlotInfo(color, slot));
+        pTeleOpRevolverTracking.put(position, new RevolverMotion.RevolverSlotInfo(color, slot));
         RobotLogCommon.d(TAG, "Revolver contents: position " + position + ", slot " + pSlot + ", color " + pColor);
     }
 
@@ -231,8 +241,8 @@ public class RevolverAnimation extends Application {
     // Initialize the display from the user's input.
     // For Auto position artifacts at top center, lower left, lower right.
     // For TELEOP position artifacts at bottom center, upper left, upper right.
-    private void initializeRevolverDisplay(RevolverUI.DriverInput pDriverInput) {
-
+    private void initializeRevolverDisplay(RevolverUI.DriverInput pDriverInput,
+                                           EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> pRevolverTracking) {
         switch (pDriverInput.opModeType) {
             case AUTO: {
                 Image revolverImage = new Image("file:Files/images/revolver outline 600x600 shoot.png");
@@ -241,7 +251,7 @@ public class RevolverAnimation extends Application {
                 // Add the ImageView to the revolver's Group.
                 controller.revolver.getChildren().add(revolverImageView);
 
-                for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pDriverInput.revolverTracking.entrySet()) {
+                for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pRevolverTracking.entrySet()) {
                     RevolverMotion.RevolverTrackingPosition key = entry.getKey();
                     RevolverMotion.RevolverSlotInfo value = entry.getValue();
 
@@ -271,7 +281,7 @@ public class RevolverAnimation extends Application {
 
                 // Add the ImageView to the revolver's Group.
                 controller.revolver.getChildren().add(revolverImageView);
-                for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pDriverInput.revolverTracking.entrySet()) {
+                for (Map.Entry<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> entry : pRevolverTracking.entrySet()) {
                     RevolverMotion.RevolverTrackingPosition key = entry.getKey();
                     RevolverMotion.RevolverSlotInfo value = entry.getValue();
 
@@ -347,17 +357,16 @@ public class RevolverAnimation extends Application {
     }
 
     // Configure the amimation for rapid fire.
-    private void rapidFire() {
+    private void rapidFire(RevolverUI.DriverInput pDriverInput, EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> pRevolverTracking) {
         // First rotate the Revolver into the correct shooting
         // position for the pattern entered by the user.
 
         // Note: for driver input we use the choices "AUTO" and "TELEOP"
         // but internally we use their RevolverMotion.SearchOrder
         // equivalents: IN_PLACE and ON_TRANSITION, respectively.
-        RevolverMotion revolver = new RevolverMotion(driverInput.revolverTracking);
-
-        Pair<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> firstShot = revolver.setRevolverToShootingOrientation(driverInput.artifactPattern,
-                driverInput.searchOrder);
+        RevolverMotion revolver = new RevolverMotion(pRevolverTracking);
+        Pair<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> firstShot = revolver.setRevolverToShootingOrientation(pDriverInput.artifactPattern,
+                pDriverInput.searchOrder);
 
         // We need to get the shot order of the artifacts in
         // terms of the JavaFX representation of the Revolver.
@@ -402,7 +411,7 @@ public class RevolverAnimation extends Application {
         // Set the shot order.
         double rotationToShootingPosition;
         List<Circle> fxShotOrder = new ArrayList<>();
-        switch (driverInput.searchOrder) {
+        switch (pDriverInput.searchOrder) {
             case IN_PLACE: {
                 RobotLogCommon.d(TAG, "Auto: in-place rotation of slot " + firstShot.second.revolverSlot.name() + " at tracking position " + firstShot.first + " with color " + firstShot.second.color + " to the center");
 
@@ -468,7 +477,7 @@ public class RevolverAnimation extends Application {
                 break;
             }
             default:
-                throw new AutonomousRobotException(TAG, "No such search order " + driverInput.searchOrder);
+                throw new AutonomousRobotException(TAG, "No such search order " + pDriverInput.searchOrder);
         }
 
         // According to the shot order set above, rotate all three
