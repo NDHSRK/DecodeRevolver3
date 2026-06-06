@@ -52,7 +52,7 @@ public class RevolverController {
     public HBox thirdColorHBox;
 
     @FXML
-    public HBox playResetHBox;
+    public HBox playHBox;
     @FXML
     public Button playButton;
     @FXML

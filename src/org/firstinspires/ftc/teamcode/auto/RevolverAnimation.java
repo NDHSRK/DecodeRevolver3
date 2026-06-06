@@ -133,7 +133,6 @@ public class RevolverAnimation extends Application {
 
             // Ready to play.
             controller.revolverPane.getChildren().remove(driverInput.uiInstructions);
-            controller.resetTeleOpUIButton.setVisible(false); // hide the TeleOp reset button
             controller.playButton.setDisable(true);
 
             // Set the initial orientation (top center shooting for Auto,
@@ -361,6 +360,11 @@ public class RevolverAnimation extends Application {
         // but internally we use their RevolverMotion.SearchOrder
         // equivalents: IN_PLACE and ON_TRANSITION, respectively.
         RevolverMotion revolver = new RevolverMotion(pRevolverTracking);
+        if (revolver.getArtifactCount() == 0) { // the driver selected 3 empty slots
+            RobotLogCommon.d(TAG, "Attempt at rapid fire with no artifacts in the Revolver");
+            return;
+        }
+
         Pair<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> firstShot = revolver.setRevolverToShootingOrientation(pDriverInput.artifactPattern,
                 pDriverInput.searchOrder);
 

@@ -105,18 +105,13 @@
                <Insets />
             </GridPane.margin>
          </HBox>
-         <HBox fx:id="playResetHBox" spacing="20" GridPane.columnSpan="2147483647" GridPane.rowIndex="11">
+         <HBox fx:id="playHBox" spacing="20" GridPane.columnSpan="2147483647" GridPane.rowIndex="11">
             <GridPane.margin>
                <Insets top="20.0" />
             </GridPane.margin>
             <Button fx:id="playButton" mnemonicParsing="false" text="Play">
                <font>
                   <Font name="Arial Bold" size="16.0" />
-               </font>
-            </Button>
-            <Button fx:id="resetTeleOpUIButton" mnemonicParsing="false" text="Reset TeleOp UI">
-               <font>
-                  <Font name="Arial" size="16.0" />
                </font>
             </Button>
          </HBox>

@@ -35,10 +35,7 @@ public class RevolverUI {
     private final Pair<ToggleGroup, HBox> colorGroupLeft;
     private final Pair<ToggleGroup, HBox> colorGroupRight;
 
-    private boolean updatingProgrammatically = false; // for slot RadioButtons
-
     public RevolverUI(RevolverController pController, String pSelectedOpMode) {
-
         // Show the artifact selection combo box first.
         artifactCombo.setPrefWidth(Region.USE_COMPUTED_SIZE);
 
@@ -79,26 +76,25 @@ public class RevolverUI {
             pController.secondPositionLabel.setText(UIPositionLabel.LEFT.toString());
             pController.thirdPositionLabel.setText(UIPositionLabel.RIGHT.toString());
 
+            // For Auto set the default slot and color selections according to the
+            // 4348 convention for the Decode game. The driver may not change these:
+            // CENTER, SLOT_0, GREEN
+            // LEFT, SLOT_2, PURPLE
+            // RIGHT, SLOT_1, PURPLE
+
             // Slot selection.
-            //**TODO uiSlotSelection(controller.firstSlotHBox, RevolverServo.RevolverSlot.SLOT_0)
-            slotGroupCenter = Pair.create(uiSlotSelection(pController.firstSlotHBox), pController.firstSlotHBox);
-            slotGroupLeft = Pair.create(uiSlotSelection(pController.secondSlotHBox), pController.secondSlotHBox);
-            slotGroupRight = Pair.create(uiSlotSelection(pController.thirdSlotHBox), pController.thirdSlotHBox);
+            slotGroupCenter = Pair.create(uiSlotSelection(pController.firstSlotHBox, RevolverServo.RevolverSlot.SLOT_0), pController.firstSlotHBox);
+            slotGroupLeft = Pair.create(uiSlotSelection(pController.secondSlotHBox, RevolverServo.RevolverSlot.SLOT_2), pController.secondSlotHBox);
+            slotGroupRight = Pair.create(uiSlotSelection(pController.thirdSlotHBox, RevolverServo.RevolverSlot.SLOT_1), pController.thirdSlotHBox);
 
             // Color Selection.
-            //**TODO uiColorSelection(controller.firstColorHBox, RobotConstantsDecode.ArtifactColor.GREEN)
-            colorGroupCenter = Pair.create(uiColorSelection(pController.firstColorHBox), pController.firstColorHBox);
-            colorGroupLeft = Pair.create(uiColorSelection(pController.secondColorHBox), pController.secondColorHBox);
-            colorGroupRight = Pair.create(uiColorSelection(pController.thirdColorHBox), pController.thirdColorHBox);
+            colorGroupCenter = Pair.create(uiColorSelection(pController.firstColorHBox, RobotConstantsDecode.ArtifactColor.GREEN), pController.firstColorHBox);
+            colorGroupLeft = Pair.create(uiColorSelection(pController.secondColorHBox, RobotConstantsDecode.ArtifactColor.PURPLE), pController.secondColorHBox);
+            colorGroupRight = Pair.create(uiColorSelection(pController.thirdColorHBox, RobotConstantsDecode.ArtifactColor.PURPLE), pController.thirdColorHBox);
 
             // No need to set listeners for Auto; slot selection is disabled.
-
-            // Hide the TeleOp reset button.
-            pController.resetTeleOpUIButton.setVisible(false); //
-
-            // Since slot and color selections are fixed in our
-            // standard setup for the Decode game, disable their
-            // HBox containers.
+            // Ans, since slot and color selections are fixed in our standard
+            // setup for the Decode game, disable their HBox containers.
             slotGroupCenter.second.setDisable(true);
             slotGroupLeft.second.setDisable(true);
             slotGroupRight.second.setDisable(true);
@@ -117,37 +113,27 @@ public class RevolverUI {
                     For TeleOp the user interface is active.
                     Select a Revolver slot and a color for each position.
                     Press Play to run the animation.""");
+
             pController.firstPositionLabel.setText(UIPositionLabel.LEFT.toString());
             pController.secondPositionLabel.setText(UIPositionLabel.RIGHT.toString());
             pController.thirdPositionLabel.setText(UIPositionLabel.CENTER.toString());
 
+            // For TeleOp set the default slot and color selections; the driver can
+            // change these.
             // Slot selection.
-            slotGroupLeft = Pair.create(uiSlotSelection(pController.firstSlotHBox), pController.firstSlotHBox);
-            slotGroupRight = Pair.create(uiSlotSelection(pController.secondSlotHBox), pController.secondSlotHBox);
-            slotGroupCenter = Pair.create(uiSlotSelection(pController.thirdSlotHBox), pController.thirdSlotHBox);
+            slotGroupLeft = Pair.create(uiSlotSelection(pController.firstSlotHBox, RevolverServo.RevolverSlot.SLOT_2), pController.firstSlotHBox);
+            slotGroupRight = Pair.create(uiSlotSelection(pController.secondSlotHBox, RevolverServo.RevolverSlot.SLOT_1), pController.secondSlotHBox);
+            slotGroupCenter = Pair.create(uiSlotSelection(pController.thirdSlotHBox, RevolverServo.RevolverSlot.SLOT_0), pController.thirdSlotHBox);
 
-            // Color Selection.
-            colorGroupLeft = Pair.create(uiColorSelection(pController.firstColorHBox), pController.firstColorHBox);
-            colorGroupRight = Pair.create(uiColorSelection(pController.secondColorHBox), pController.secondColorHBox);
-            colorGroupCenter = Pair.create(uiColorSelection(pController.thirdColorHBox), pController.thirdColorHBox);
+            // Color Selection; set all defaults to "Empty".
+            colorGroupLeft = Pair.create(uiColorSelection(pController.firstColorHBox, RobotConstantsDecode.ArtifactColor.NPOS), pController.firstColorHBox);
+            colorGroupRight = Pair.create(uiColorSelection(pController.secondColorHBox, RobotConstantsDecode.ArtifactColor.NPOS), pController.secondColorHBox);
+            colorGroupCenter = Pair.create(uiColorSelection(pController.thirdColorHBox, RobotConstantsDecode.ArtifactColor.NPOS), pController.thirdColorHBox);
 
             // Set the listeners that ensure that a slot can only be selected once.
             setSlotListener(slotGroupCenter.first, slotGroupLeft.first, slotGroupRight.first);
             setSlotListener(slotGroupLeft.first, slotGroupCenter.first, slotGroupRight.first);
             setSlotListener(slotGroupRight.first, slotGroupCenter.first, slotGroupLeft.first);
-
-            // If the driver hits the TeleOp reset button then re-enable the
-            // RadioButtons for the slots.
-            pController.resetTeleOpUIButton.setOnAction(e -> {
-                slotGroupCenter.second.setDisable(false); // enable the enclosing HBox
-                slotGroupLeft.second.setDisable(false);
-                slotGroupRight.second.setDisable(false);
-
-                // Enable all slot radio buttons.
-                enableSlotRadioButtons(slotGroupCenter.first);
-                enableSlotRadioButtons(slotGroupLeft.first);
-                enableSlotRadioButtons(slotGroupRight.first);
-            });
         }
 
         // Center the user interface instructions in the Revolver Pane on the left.
@@ -159,7 +145,6 @@ public class RevolverUI {
         uiInstructions.yProperty().bind(pController.revolverPane.heightProperty().divide(2).add(uiInstructions.getLayoutBounds().getHeight() / 4));
         pController.revolverPane.getChildren().add(uiInstructions);
     }
-
 
     // It only makes sense to call this after the Play button has been pressed.
     public DriverInput getDriverInput() {
@@ -187,30 +172,33 @@ public class RevolverUI {
 
         // Now gather all of the driver input.
         return new DriverInput(opModeType, uiInstructions, searchOrder, patternColors,
-                slotGroupCenter.first, slotGroupCenter.first, slotGroupRight.first,
+                slotGroupCenter.first, slotGroupLeft.first, slotGroupRight.first,
                 colorGroupCenter.first, colorGroupLeft.first, colorGroupRight.first);
     }
 
-    //**TODO Need to know which slot to set as selected; parameter = RevolverServo.RevolverSlot pDefaultSlot
     // For a single RevolverTrackingPosition create a RadioButton for slot selection.
-    private ToggleGroup uiSlotSelection(HBox pRowGridBox) {
+    private ToggleGroup uiSlotSelection(HBox pRowGridBox, RevolverServo.RevolverSlot pDefaultSlot) {
         ToggleGroup slotGroup = new ToggleGroup();
         RadioButton rbSlot0 = new RadioButton(RevolverServo.RevolverSlot.SLOT_0.toString());
         rbSlot0.setMnemonicParsing(false); // show underscore
         rbSlot0.setFont(Font.font("Arial", 14));
         rbSlot0.setToggleGroup(slotGroup);
-        // if (pDefaultSlot == RevolverServo.RevolverSlot.SLOT_0)
-        // rbSlot0.setSelected(true);
+        if (pDefaultSlot == RevolverServo.RevolverSlot.SLOT_0)
+            rbSlot0.setSelected(true);
 
         RadioButton rbSlot1 = new RadioButton(RevolverServo.RevolverSlot.SLOT_1.toString());
         rbSlot1.setMnemonicParsing(false); // show underscore
         rbSlot1.setFont(Font.font("Arial", 14));
         rbSlot1.setToggleGroup(slotGroup);
+        if (pDefaultSlot == RevolverServo.RevolverSlot.SLOT_1)
+            rbSlot1.setSelected(true);
 
         RadioButton rbSlot2 = new RadioButton(RevolverServo.RevolverSlot.SLOT_2.toString());
         rbSlot2.setMnemonicParsing(false); // show underscore
         rbSlot2.setFont(Font.font("Arial", 14));
         rbSlot2.setToggleGroup(slotGroup);
+        if (pDefaultSlot == RevolverServo.RevolverSlot.SLOT_2)
+            rbSlot2.setSelected(true);
 
         // Layout side-by-side.
         pRowGridBox.setSpacing(15);
@@ -220,8 +208,7 @@ public class RevolverUI {
         return slotGroup;
     }
 
-    //**TODO Need to know which color to set as selected; parameter = RobotConstantsDecode.ArtifactColor pDefaultColor
-    private ToggleGroup uiColorSelection(HBox pColorGridBox) {
+    private ToggleGroup uiColorSelection(HBox pColorGridBox, RobotConstantsDecode.ArtifactColor pDefaultColor) {
 
         // Create RadioButtons for artifact color selection.
         ToggleGroup colorGroup = new ToggleGroup();
@@ -230,24 +217,29 @@ public class RevolverUI {
         rbGreen.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         rbGreen.setStyle("-fx-text-fill: green;");
         rbGreen.setToggleGroup(colorGroup);
-        // if (pDefaultColor == RevolverServo.RobotConstantsDecode.ArtifactColor.GREEN)
-        // rbGreen.setSelected(true);
+        if (pDefaultColor == RobotConstantsDecode.ArtifactColor.GREEN)
+            rbGreen.setSelected(true);
 
         RadioButton rbPurple = new RadioButton("Purple");
         rbPurple.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         rbPurple.setStyle("-fx-text-fill: purple;");
         rbPurple.setToggleGroup(colorGroup);
+        if (pDefaultColor == RobotConstantsDecode.ArtifactColor.PURPLE)
+            rbPurple.setSelected(true);
 
         RadioButton rbUnknown = new RadioButton("Unknown");
         rbUnknown.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         rbUnknown.setStyle("-fx-text-fill: red;");
         rbUnknown.setToggleGroup(colorGroup);
+        if (pDefaultColor == RobotConstantsDecode.ArtifactColor.UNKNOWN)
+            rbUnknown.setSelected(true);
 
         RadioButton rbEmpty = new RadioButton("Empty");
         rbEmpty.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         rbEmpty.setStyle("-fx-text-fill: black;");
         rbEmpty.setToggleGroup(colorGroup);
-        rbEmpty.setSelected(true);
+        if (pDefaultColor == RobotConstantsDecode.ArtifactColor.NPOS)
+            rbEmpty.setSelected(true);
 
         // Layout side-by-side
         pColorGridBox.setSpacing(15);
@@ -263,68 +255,32 @@ public class RevolverUI {
     // to press Play, each unique slot will be assigned to a unique RevolverTrackingPosition.
     private void setSlotListener(ToggleGroup pSlotGroup, ToggleGroup pOtherSlotGroup1, ToggleGroup pOtherSlotGroup2) {
         pSlotGroup.selectedToggleProperty().addListener((observable, oldToggle, newToggle) -> {
-            if (updatingProgrammatically) {
-                return; // Ignore the event while the flag is active
-            }
-
-            //!! These tests must be done in this order - oldToggle first.
-            if (oldToggle != null) { // if toggling from on to off ...
-                RadioButton slotButton = (RadioButton) oldToggle;
-                String slotString = slotButton.getText();
-                setOtherSlotTogglesOn(slotString, pOtherSlotGroup1, pOtherSlotGroup2);
-            }
-
-            //!! No else here.
+            // When the driver selects a radio button for a slot,
+            // deselect the button for the same slot in the other
+            // two rows.
             if (newToggle != null) { // if toggling from off to on ...
                 RadioButton slotButton = (RadioButton) newToggle;
                 String slotString = slotButton.getText();
                 if (newToggle.isSelected())
-                    setOtherSlotTogglesOff(slotString, pOtherSlotGroup1, pOtherSlotGroup2);
+                    deselectOtherSlotToggles(slotString, pOtherSlotGroup1, pOtherSlotGroup2);
             }
         });
     }
 
-    private void setOtherSlotTogglesOff(String pSlotText, ToggleGroup pOtherSlotGroup1, ToggleGroup pOtherSlotGroup2) {
+    private void deselectOtherSlotToggles(String pSlotText, ToggleGroup pOtherSlotGroup1, ToggleGroup pOtherSlotGroup2) {
         // Disable the same button in pOtherSlotGroup1.
         for (Toggle toggle : pOtherSlotGroup1.getToggles()) {
             RadioButton selected = (RadioButton) toggle;
             if (selected.getText().equals(pSlotText))
-                selected.setDisable(true);
+                selected.setSelected(false);
         }
 
         // Do the same for pOtherSlotGroup2.
         for (Toggle toggle : pOtherSlotGroup2.getToggles()) {
             RadioButton selected = (RadioButton) toggle;
             if (selected.getText().equals(pSlotText))
-                selected.setDisable(true);
+                selected.setSelected(false);
         }
-    }
-
-    private void setOtherSlotTogglesOn(String pSlotText, ToggleGroup pOtherSlotGroup1, ToggleGroup pOtherSlotGroup2) {
-        // Enable the same button in pOtherSlotGroup1.
-        for (Toggle toggle : pOtherSlotGroup1.getToggles()) {
-            RadioButton selected = (RadioButton) toggle;
-            if (selected.getText().equals(pSlotText) && selected.isDisabled())
-                selected.setDisable(false);
-        }
-
-        // Do the same for pOtherSlotGroup2.
-        for (Toggle toggle : pOtherSlotGroup2.getToggles()) {
-            RadioButton selected = (RadioButton) toggle;
-            if (selected.getText().equals(pSlotText) && selected.isDisabled())
-                selected.setDisable(false);
-        }
-    }
-
-    private void enableSlotRadioButtons(ToggleGroup pSlotGroup) {
-        updatingProgrammatically = true; // temporarily disable listener to change values programmatically
-
-        for (Toggle toggle : pSlotGroup.getToggles()) {
-            RadioButton oneButton = (RadioButton) toggle;
-            oneButton.setDisable(false);
-        }
-
-        updatingProgrammatically = false;
     }
 
     public static class DriverInput {
