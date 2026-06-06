@@ -21,18 +21,25 @@ public class RevolverUI {
 
     private enum UIPositionLabel {LEFT, CENTER, RIGHT}
 
-    private final RevolverController controller;
+    // Variables to hold the UI responses.
+    private final ComboBox<String> artifactCombo = new ComboBox<>();
+    private final OpModeType opModeType;
+    private final RevolverMotion.SearchOrder searchOrder;
+    private final Text uiInstructions;
+
+    private final Pair<ToggleGroup, HBox> slotGroupCenter;
+    private final Pair<ToggleGroup, HBox> slotGroupLeft;
+    private final Pair<ToggleGroup, HBox> slotGroupRight;
+
+    private final Pair<ToggleGroup, HBox> colorGroupCenter;
+    private final Pair<ToggleGroup, HBox> colorGroupLeft;
+    private final Pair<ToggleGroup, HBox> colorGroupRight;
 
     private boolean updatingProgrammatically = false; // for slot RadioButtons
 
-    public RevolverUI(RevolverController pController) {
-        controller = pController;
-    }
+    public RevolverUI(RevolverController pController, String pSelectedOpMode) {
 
-    public DriverInput runUI(String pSelectedOpMode) {
         // Show the artifact selection combo box first.
-        // 1. Create the ComboBox.
-        ComboBox<String> artifactCombo = new ComboBox<>();
         artifactCombo.setPrefWidth(Region.USE_COMPUTED_SIZE);
 
         // 2. Add three choices.
@@ -46,20 +53,8 @@ public class RevolverUI {
         // To get the correct spacing between the label "Artifact pattern"
         // and the ComboBox with the patterns I had to put both into an
         // HBox.
-        controller.patternHBox.setSpacing(10);
-        controller.patternHBox.getChildren().add(artifactCombo);
-
-        Pair<ToggleGroup, HBox> slotGroupCenter;
-        Pair<ToggleGroup, HBox> slotGroupLeft;
-        Pair<ToggleGroup, HBox> slotGroupRight;
-
-        Pair<ToggleGroup, HBox> colorGroupCenter;
-        Pair<ToggleGroup, HBox> colorGroupLeft;
-        Pair<ToggleGroup, HBox> colorGroupRight;
-
-        // Variables to hold the UI responses.
-        OpModeType opModeType;
-        RevolverMotion.SearchOrder searchOrder;
+        pController.patternHBox.setSpacing(10);
+        pController.patternHBox.getChildren().add(artifactCombo);
 
         // If the driver has selected the radio button for "Auto top
         // shoot" then the UI for slot and color selection will be
@@ -68,11 +63,10 @@ public class RevolverUI {
         // fixed. If the user selects "TeleOp bottom intake" then
         // the order will be LEFT, RIGHT, CENTER and the UI will be
         // active.
-        Text uiInstructions;
-        String opModeLabel = controller.opModeLabel.getText();
+        String opModeLabel = pController.opModeLabel.getText();
         if (pSelectedOpMode.equals("Auto top shoot")) {
             opModeType = OpModeType.AUTO;
-            controller.opModeLabel.setText(opModeLabel + "Auto");
+            pController.opModeLabel.setText(opModeLabel + "Auto");
 
             // Use the default preload autoRevolverTracking.
             searchOrder = RevolverMotion.SearchOrder.IN_PLACE;
@@ -81,24 +75,26 @@ public class RevolverUI {
                     For Auto the user interface is not active.
                     Press Play to run the animation.""");
 
-            controller.firstPositionLabel.setText(UIPositionLabel.CENTER.toString());
-            controller.secondPositionLabel.setText(UIPositionLabel.LEFT.toString());
-            controller.thirdPositionLabel.setText(UIPositionLabel.RIGHT.toString());
+            pController.firstPositionLabel.setText(UIPositionLabel.CENTER.toString());
+            pController.secondPositionLabel.setText(UIPositionLabel.LEFT.toString());
+            pController.thirdPositionLabel.setText(UIPositionLabel.RIGHT.toString());
 
             // Slot selection.
-            slotGroupCenter = Pair.create(uiSlotSelection(controller.firstSlotHBox), controller.firstSlotHBox);
-            slotGroupLeft = Pair.create(uiSlotSelection(controller.secondSlotHBox), controller.secondSlotHBox);
-            slotGroupRight = Pair.create(uiSlotSelection(controller.thirdSlotHBox), controller.thirdSlotHBox);
+            //**TODO uiSlotSelection(controller.firstSlotHBox, RevolverServo.RevolverSlot.SLOT_0)
+            slotGroupCenter = Pair.create(uiSlotSelection(pController.firstSlotHBox), pController.firstSlotHBox);
+            slotGroupLeft = Pair.create(uiSlotSelection(pController.secondSlotHBox), pController.secondSlotHBox);
+            slotGroupRight = Pair.create(uiSlotSelection(pController.thirdSlotHBox), pController.thirdSlotHBox);
 
             // Color Selection.
-            colorGroupCenter = Pair.create(uiColorSelection(controller.firstColorHBox), controller.firstColorHBox);
-            colorGroupLeft = Pair.create(uiColorSelection(controller.secondColorHBox), controller.secondColorHBox);
-            colorGroupRight = Pair.create(uiColorSelection(controller.thirdColorHBox), controller.thirdColorHBox);
+            //**TODO uiColorSelection(controller.firstColorHBox, RobotConstantsDecode.ArtifactColor.GREEN)
+            colorGroupCenter = Pair.create(uiColorSelection(pController.firstColorHBox), pController.firstColorHBox);
+            colorGroupLeft = Pair.create(uiColorSelection(pController.secondColorHBox), pController.secondColorHBox);
+            colorGroupRight = Pair.create(uiColorSelection(pController.thirdColorHBox), pController.thirdColorHBox);
 
             // No need to set listeners for Auto; slot selection is disabled.
 
             // Hide the TeleOp reset button.
-            controller.resetTeleOpUIButton.setVisible(false); //
+            pController.resetTeleOpUIButton.setVisible(false); //
 
             // Since slot and color selections are fixed in our
             // standard setup for the Decode game, disable their
@@ -113,7 +109,7 @@ public class RevolverUI {
 
         } else { // must be TeleOp
             opModeType = OpModeType.TELEOP;
-            controller.opModeLabel.setText(opModeLabel + "TeleOp");
+            pController.opModeLabel.setText(opModeLabel + "TeleOp");
 
             searchOrder = RevolverMotion.SearchOrder.ON_TRANSITION;
 
@@ -121,19 +117,19 @@ public class RevolverUI {
                     For TeleOp the user interface is active.
                     Select a Revolver slot and a color for each position.
                     Press Play to run the animation.""");
-            controller.firstPositionLabel.setText(UIPositionLabel.LEFT.toString());
-            controller.secondPositionLabel.setText(UIPositionLabel.RIGHT.toString());
-            controller.thirdPositionLabel.setText(UIPositionLabel.CENTER.toString());
+            pController.firstPositionLabel.setText(UIPositionLabel.LEFT.toString());
+            pController.secondPositionLabel.setText(UIPositionLabel.RIGHT.toString());
+            pController.thirdPositionLabel.setText(UIPositionLabel.CENTER.toString());
 
             // Slot selection.
-            slotGroupLeft = Pair.create(uiSlotSelection(controller.firstSlotHBox), controller.firstSlotHBox);
-            slotGroupRight = Pair.create(uiSlotSelection(controller.secondSlotHBox), controller.secondSlotHBox);
-            slotGroupCenter = Pair.create(uiSlotSelection(controller.thirdSlotHBox), controller.thirdSlotHBox);
+            slotGroupLeft = Pair.create(uiSlotSelection(pController.firstSlotHBox), pController.firstSlotHBox);
+            slotGroupRight = Pair.create(uiSlotSelection(pController.secondSlotHBox), pController.secondSlotHBox);
+            slotGroupCenter = Pair.create(uiSlotSelection(pController.thirdSlotHBox), pController.thirdSlotHBox);
 
             // Color Selection.
-            colorGroupLeft = Pair.create(uiColorSelection(controller.firstColorHBox), controller.firstColorHBox);
-            colorGroupRight = Pair.create(uiColorSelection(controller.secondColorHBox), controller.secondColorHBox);
-            colorGroupCenter = Pair.create(uiColorSelection(controller.thirdColorHBox), controller.thirdColorHBox);
+            colorGroupLeft = Pair.create(uiColorSelection(pController.firstColorHBox), pController.firstColorHBox);
+            colorGroupRight = Pair.create(uiColorSelection(pController.secondColorHBox), pController.secondColorHBox);
+            colorGroupCenter = Pair.create(uiColorSelection(pController.thirdColorHBox), pController.thirdColorHBox);
 
             // Set the listeners that ensure that a slot can only be selected once.
             setSlotListener(slotGroupCenter.first, slotGroupLeft.first, slotGroupRight.first);
@@ -142,7 +138,7 @@ public class RevolverUI {
 
             // If the driver hits the TeleOp reset button then re-enable the
             // RadioButtons for the slots.
-            controller.resetTeleOpUIButton.setOnAction(e -> {
+            pController.resetTeleOpUIButton.setOnAction(e -> {
                 slotGroupCenter.second.setDisable(false); // enable the enclosing HBox
                 slotGroupLeft.second.setDisable(false);
                 slotGroupRight.second.setDisable(false);
@@ -154,6 +150,19 @@ public class RevolverUI {
             });
         }
 
+        // Center the user interface instructions in the Revolver Pane on the left.
+        // Bind text X position: (PaneWidth / 2) - (TextWidth / 2)
+        uiInstructions.setFont(Font.font("Arial", 16));
+        uiInstructions.xProperty().bind(pController.revolverPane.widthProperty().divide(2).subtract(uiInstructions.getLayoutBounds().getWidth() / 2));
+
+        // Bind text Y position: (PaneHeight / 2) + (TextHeight / 4) to adjust for baseline
+        uiInstructions.yProperty().bind(pController.revolverPane.heightProperty().divide(2).add(uiInstructions.getLayoutBounds().getHeight() / 4));
+        pController.revolverPane.getChildren().add(uiInstructions);
+    }
+
+
+    // It only makes sense to call this after the Play button has been pressed.
+    public DriverInput getDriverInput() {
         // From the ComboBox selection for the artifact pattern
         // create a list of colors.
         RobotConstantsDecode.ObeliskPattern pattern = RobotConstantsDecode.ObeliskPattern.valueOf(artifactCombo.getSelectionModel().getSelectedItem());
@@ -176,22 +185,13 @@ public class RevolverUI {
             }
         }
 
-        //**TODO Access to the RevolverPane doesn't belong here; return uiInstructions.
-        // Center the user inteface instructions in the Revolver Pane on the left.
-        // Bind text X position: (PaneWidth / 2) - (TextWidth / 2)
-        uiInstructions.setFont(Font.font("Arial", 16));
-        uiInstructions.xProperty().bind(controller.revolverPane.widthProperty().divide(2).subtract(uiInstructions.getLayoutBounds().getWidth() / 2));
-
-        // Bind text Y position: (PaneHeight / 2) + (TextHeight / 4) to adjust for baseline
-        uiInstructions.yProperty().bind(controller.revolverPane.heightProperty().divide(2).add(uiInstructions.getLayoutBounds().getHeight() / 4));
-        controller.revolverPane.getChildren().add(uiInstructions);
-
         // Now gather all of the driver input.
         return new DriverInput(opModeType, uiInstructions, searchOrder, patternColors,
                 slotGroupCenter.first, slotGroupCenter.first, slotGroupRight.first,
                 colorGroupCenter.first, colorGroupLeft.first, colorGroupRight.first);
     }
 
+    //**TODO Need to know which slot to set as selected; parameter = RevolverServo.RevolverSlot pDefaultSlot
     // For a single RevolverTrackingPosition create a RadioButton for slot selection.
     private ToggleGroup uiSlotSelection(HBox pRowGridBox) {
         ToggleGroup slotGroup = new ToggleGroup();
@@ -199,6 +199,8 @@ public class RevolverUI {
         rbSlot0.setMnemonicParsing(false); // show underscore
         rbSlot0.setFont(Font.font("Arial", 14));
         rbSlot0.setToggleGroup(slotGroup);
+        // if (pDefaultSlot == RevolverServo.RevolverSlot.SLOT_0)
+        // rbSlot0.setSelected(true);
 
         RadioButton rbSlot1 = new RadioButton(RevolverServo.RevolverSlot.SLOT_1.toString());
         rbSlot1.setMnemonicParsing(false); // show underscore
@@ -218,6 +220,7 @@ public class RevolverUI {
         return slotGroup;
     }
 
+    //**TODO Need to know which color to set as selected; parameter = RobotConstantsDecode.ArtifactColor pDefaultColor
     private ToggleGroup uiColorSelection(HBox pColorGridBox) {
 
         // Create RadioButtons for artifact color selection.
@@ -227,6 +230,8 @@ public class RevolverUI {
         rbGreen.setFont(Font.font("Arial", FontWeight.BOLD, 14));
         rbGreen.setStyle("-fx-text-fill: green;");
         rbGreen.setToggleGroup(colorGroup);
+        // if (pDefaultColor == RevolverServo.RobotConstantsDecode.ArtifactColor.GREEN)
+        // rbGreen.setSelected(true);
 
         RadioButton rbPurple = new RadioButton("Purple");
         rbPurple.setFont(Font.font("Arial", FontWeight.BOLD, 14));

@@ -59,12 +59,6 @@ public class RevolverAnimation extends Application {
             RevolverMotion.RevolverTrackingPosition.REAR_VIEW_RIGHT, new RevolverMotion.RevolverSlotInfo(RobotConstantsDecode.ArtifactColor.PURPLE, RevolverServo.RevolverSlot.SLOT_1)
     ));
 
-
-
-    //**TODO ?Need labels for slots? The labels should remain horizontal even
-    // as the revolver rotates. But look at the problems with rotating text
-    // for "Unknown" and "Empty".
-
     @Override
     public void start(final Stage pStage) throws IOException {
 
@@ -93,12 +87,16 @@ public class RevolverAnimation extends Application {
         ComboBox<String> artifactCombo = new ComboBox<>();
         artifactCombo.setPrefWidth(Region.USE_COMPUTED_SIZE);
 
-        // Set up and run the UI.
-        RevolverUI revolverUI = new RevolverUI(controller);
-        RevolverUI.DriverInput driverInput = revolverUI.runUI(selectedOpMode.getText());
+        // Set up the UI.
+        RevolverUI revolverUI = new RevolverUI(controller, selectedOpMode.getText());
 
         // Get the final slot and color selections when the driver hits the Play button.
         controller.playButton.setOnAction(e -> {
+            // Get the final state of the driver's UI input at the time the Play
+            // button was pressed.
+            RevolverUI.DriverInput driverInput = revolverUI.getDriverInput();
+
+            RobotLogCommon.d(TAG, "Artifact pattern: " + driverInput.artifactPattern);
             EnumMap<RevolverMotion.RevolverTrackingPosition, RevolverMotion.RevolverSlotInfo> revolverTracking;
             if (driverInput.opModeType == RevolverUI.OpModeType.AUTO) {
                 revolverTracking = autoRevolverTracking;
@@ -196,8 +194,6 @@ public class RevolverAnimation extends Application {
 
         return (RadioButton) opModeGroup.getSelectedToggle();
     }
-
-
 
     private void alertSlotSelectionMissing(String pPosition) {
         // 1. Create the alert with the ERROR type
@@ -331,7 +327,7 @@ public class RevolverAnimation extends Application {
                 pCircle.setStrokeWidth(10.0);
 
                 //**TODO The text shows and moves with the Circle but it rotates, e.g. upside-down.
-                //** It also re-appears in its original osition after the artifact shoots.
+                //** It also re-appears in its originalp osition after the artifact shoots.
 
                 Text unknownText = new Text("Unknown");
                 unknownText.setFont(Font.font("Arial", 14));
